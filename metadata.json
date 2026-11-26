@@ -1,0 +1,8 @@
+{
+  "name": "Remix21 PromptPrint Bread Bag Manager",
+  "description": "Fast production tracker for bread bag printing, managing orders from plate creation to finishing with simple, Zalo-like efficiency.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
