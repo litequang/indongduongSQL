@@ -31,7 +31,7 @@ import {
   ResponsiveDialog,
   StatusBadge,
 } from "../common";
-import { DataTable, DataToolbar } from "../DataTable";
+import { DataTable, DataToolbar, TablePagination } from "../DataTable";
 import { Button } from "../ui/button";
 import {
   BusinessActivity,
@@ -994,6 +994,7 @@ function DesignPicker({
   onChange: (version: DesignVersion | null) => void;
 }) {
   const { search, setSearch, debounced } = useSearch();
+  const [versionPage, setVersionPage] = useState(1);
   const designs = useQuery({
     queryKey: ["saved_designs", "picker", debounced],
     queryFn: () =>
@@ -1003,11 +1004,17 @@ function DesignPicker({
   });
   const options = designs.data?.items ?? [];
   const versions = useQuery({
-    queryKey: ["saved_designs", "versions", selected?.designId],
+    queryKey: [
+      "saved_designs",
+      "picker-versions",
+      selected?.designId,
+      versionPage,
+    ],
     queryFn: () =>
       api<Page<DesignVersion>>(
         endpoint("saved-designs/" + selected!.designId + "/versions", {
-          pageSize: 100,
+          page: versionPage,
+          pageSize: 20,
         }),
       ),
     enabled: !!selected,
@@ -1020,12 +1027,13 @@ function DesignPicker({
         <select
           id={prefix + "-sample"}
           value={selected?.designId ?? ""}
-          onChange={(event) =>
+          onChange={(event) => {
+            setVersionPage(1);
             onChange(
               options.find((design) => design.id === event.target.value)
                 ?.current ?? null,
-            )
-          }
+            );
+          }}
         >
           <option value="">Không sử dụng mẫu</option>
           {selected &&
@@ -1062,6 +1070,14 @@ function DesignPicker({
             ))}
           </select>
         </FormField>
+      )}
+      {versions.data && versions.data.total > 20 && (
+        <TablePagination
+          total={versions.data.total}
+          page={versionPage}
+          pageSize={20}
+          onPage={setVersionPage}
+        />
       )}
       {(designs.error || versions.error) && (
         <Message>{designs.error?.message ?? versions.error?.message}</Message>
