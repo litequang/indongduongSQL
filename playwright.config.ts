@@ -1,24 +1,33 @@
-import { defineConfig } from '@playwright/test';
-
+import { defineConfig } from "@playwright/test";
+import { randomBytes } from "node:crypto";
+process.env.TEST_SETUP_SECRET ??= randomBytes(32).toString("hex");
+process.env.TEST_PASSWORD ??= randomBytes(24).toString("base64url");
+process.env.TEST_PASSWORD_NEXT ??= randomBytes(24).toString("base64url");
 export default defineConfig({
-  testDir: './tests/e2e',
-  timeout: 180_000,
+  testDir: "./tests/e2e",
   fullyParallel: false,
-  // Specs share one Firebase emulator project, so file-level parallelism can
-  // leak provisioned users into unique-printer matching across scenarios.
   workers: 1,
   retries: 0,
-  reporter: [['list']],
+  timeout: 60000,
+  expect: { timeout: 10000 },
+  reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: 'http://127.0.0.1:3000',
-    headless: true,
-    trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    baseURL: "http://localhost:4173",
+    viewport: { width: 1366, height: 768 },
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    contextOptions: { reducedMotion: "reduce" },
   },
   webServer: {
-    command: 'npm.cmd run dev',
-    url: 'http://127.0.0.1:3000/api/health',
-    timeout: 45_000,
+    command: "npx tsx tests/e2e-server.ts",
+    url: "http://localhost:4173/api/ready",
     reuseExistingServer: false,
+    timeout: 30000,
+    env: {
+      ALLOW_TEST_DATABASE: process.env.ALLOW_TEST_DATABASE ?? "0",
+      TEST_SETUP_SECRET: process.env.TEST_SETUP_SECRET,
+      TEST_PASSWORD: process.env.TEST_PASSWORD,
+    },
   },
+  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
 });

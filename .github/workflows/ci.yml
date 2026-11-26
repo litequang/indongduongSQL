@@ -1,0 +1,64 @@
+name: SQL foundation CI
+on:
+  push:
+    branches: [main, codex/sql-foundation, 'task/**', 'codex/**']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mariadb:
+        image: mariadb:11.4.9
+        env:
+          MARIADB_DATABASE: indongduong_sql_test
+          MARIADB_USER: indongduong_sql_test
+          # Disposable CI service only. No production secret/account is used.
+          MARIADB_PASSWORD: ci-disposable-service-only
+          MARIADB_ROOT_PASSWORD: ci-disposable-root-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: indongduong_sql_ci_unused
+      DB_USER: indongduong_sql_ci_unused
+      DB_EXPECTED_NAME: indongduong_sql_ci_unused
+      DB_PASSWORD: unused-app-database
+      APP_ORIGIN: http://localhost:4173
+      TEST_DB_NAME: indongduong_sql_test
+      TEST_DB_USER: indongduong_sql_test
+      TEST_DB_PASSWORD: ci-disposable-service-only
+      ALLOW_TEST_DATABASE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm install --global npm@10.9.7
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:legacy
+      # Integration suite applies/reruns migrations and tests real API/auth/DDL failure handling.
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm run check:runtime
+      - run: npx playwright install --with-deps chromium
+      # Dedicated test fixtures are reset only inside the guarded _test database.
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+            .local/screenshots/
+          retention-days: 7
