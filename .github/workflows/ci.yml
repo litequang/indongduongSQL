@@ -1,4 +1,4 @@
-name: SQL foundation CI
+name: SQL Foundation and Phase 02A CI
 on:
   push:
     branches: [main, codex/sql-foundation, 'task/**', 'codex/**']
@@ -47,14 +47,16 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run test:legacy
-      # Integration suite applies/reruns migrations and tests real API/auth/DDL failure handling.
-      - run: npm run test:integration
+      - name: Real MariaDB migrations, Foundation and Phase 02A API
+        run: npm run test:integration
       - run: npm run build
       - run: npm run check:runtime
-      - run: npm run test:restart
+      - name: Compiled restart and persisted business records
+        run: npm run test:restart
       - run: npx playwright install --with-deps chromium
       # Dedicated test fixtures are reset only inside the guarded _test database.
-      - run: npm run test:e2e
+      - name: Foundation and Phase 02A Playwright suites
+        run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:
