@@ -24,6 +24,7 @@ Audited 2026-11-26. Only free, commercially permitted source/dependencies are us
 | @tanstack/react-query | 5.108.4 | MIT |
 | @tanstack/react-table | 8.21.3 | MIT |
 | @types/express | 4.17.25 | MIT |
+| @types/papaparse | 5.5.2 | MIT |
 | @types/node | 22.20.1 | MIT |
 | @types/react | 19.2.18 | MIT |
 | @types/react-dom | 19.2.4 | MIT |
@@ -34,14 +35,17 @@ Audited 2026-11-26. Only free, commercially permitted source/dependencies are us
 | esbuild | 0.25.12 | MIT |
 | eslint | 9.39.5 | MIT |
 | express | 4.22.3 | MIT |
+| fflate (test fixture generation) | 0.8.3 | [MIT](docs/licenses/fflate-package.txt) |
 | globals | 16.5.0 | MIT |
 | helmet | 8.3.0 | MIT |
 | lucide-react | 0.546.0 | ISC |
 | mysql2 | 3.24.6 | MIT |
+| papaparse | 5.7.1 | [MIT](docs/licenses/papaparse-package.txt) |
 | prettier | 3.10.1 | MIT |
 | radix-ui | 1.8.1 | MIT |
 | react | 19.2.8 | MIT |
 | react-dom | 19.2.8 | MIT |
+| read-excel-file | 9.3.20 | [MIT](docs/licenses/read-excel-file-package.txt) |
 | recharts | 3.11.1 | MIT |
 | tailwind-merge | 3.7.1 | MIT |
 | tailwindcss | 4.3.3 | MIT |

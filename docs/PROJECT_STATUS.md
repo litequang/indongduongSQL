@@ -1,13 +1,15 @@
 # Project status
 
-Agent: PC. Updated 2026-11-26. Branch: codex/sql-foundation. Source provenance: SOURCE_PROVENANCE.md. Latest tested code checkpoint: 71a78ff0901031a8c129d8ae73a39d23e0b36fc2. Remote CI verified de88c6180057ab713ccd816efbc7a595955d46df (that code plus documentation). HANDOFF.md is ready for PC/Cloud continuation.
+Cloud handoff, 2026-11-26. Task branch `codex/phase-02a-sales-design`, based on `codex/sql-foundation` at `2425a42cf0a6618dac653b2ebbb8010e29edcad1`. See [HANDOFF.md](HANDOFF.md) for the tested commit and [PHASE_02A_TEST_REPORT.md](PHASE_02A_TEST_REPORT.md) for test and CI status.
 
-Phase 00 completed: safe independent snapshot, architecture/Firebase/workflow/permission/UI/storage audit and roadmap. Phase 01 SQL + UI Foundation implemented and local acceptance verified. Code is pushed; Ubuntu CI [45783512151](https://github.com/litequang/indongduongSQL/actions/runs/45783512151) is green. **Phase 00 + Phase 01 + UI Foundation are complete for the agreed scope.** This is not a merged main release. Phase 02 has not started.
+## Delivered
 
-Implemented: real Express/MariaDB, ordered checksummed concurrent-safe migrations, one-time secret setup, scrypt passwords, DB cookie sessions + Origin/CSRF/rate limiting, eight-role backend authority, staff lifecycle/profile/password, normalized settings, administrative audit, bounded commit-ordered invalidation feed/optimistic versions, shadcn/Radix responsive light/dark UI, isolated legacy reference, Windows/Cloud scripts, real compiled-process restart smoke and MariaDB CI workflow.
+- Phase 00 and Phase 01 with UI Foundation are inherited from the PC branch.
+- Customers have commercial CRUD, soft retirement, indexed duplicate identity, contact and external reference fields, server-side search/filter/sort/page, order history, per-record audit and optimistic versions.
+- Customer imports support UTF-8 CSV and XLSX, mapped preview, skip or explicit duplicate updates, bounded resumable jobs, per-row outcomes and persisted actor-scoped history.
+- Sales covers multi-item draft creation/editing, commercial confirmation and cancellation, unique codes, per-product requirements and quantities, audit and immutable customer/design snapshots. Admin/Developer reopen requires an eligible downstream status.
+- Saved designs have searchable metadata, grid/list views, append-only versions, audit and version reuse in sales. Migration 003 and the incremental invalidation feed serve the four modules.
 
-Pending features are explicit unavailable UI: customers/import, sales/design, production/plates/printing, finishing, inventory/dispatch/shipping, notifications, reporting, private R2 uploads/backups. Full source parity is not claimed. FEATURE_PARITY_MATRIX.md owns detailed coverage.
+## Pending phases
 
-Validated environment: Windows, Node 22.22.2, npm 10.9.7, MariaDB 11.4.9 at 127.0.0.1:3307, separate project dev/test accounts. Existing MySQL and Thờ Phượng Pro were not modified. Local workspace E:\CODE\indongduongSQL; shared scripts are path independent. Local URL http://localhost:4100. Dev DB remains empty for the owner to set up the first Developer; all test accounts live only in the dedicated test DB.
-
-Evidence: TEST_REPORT.md and detailed linked reports. Hawk Host account/runtime/DB/proxy/limits, physical devices and live R2 remain LOCAL_VALIDATION_REQUIRED. No hosting or old Firebase/R2 production access was performed.
+Phase 02B owns Designer queue, quick composer, production orders, M:N links, revisions and printer workflow. Phase 02C owns finishing, accepted stock and shipment. Phase 03 owns private R2, notifications and backup. Real Hawk Host hosting and physical devices remain LOCAL_VALIDATION_REQUIRED. See [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) and [PHASE_02B_HANDOFF.md](PHASE_02B_HANDOFF.md).

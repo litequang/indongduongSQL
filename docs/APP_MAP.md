@@ -21,4 +21,4 @@ Start with AGENTS.md, PROJECT_STATUS.md and HANDOFF.md. Feature coverage is auth
 | Reusable UI/table/state components | src/components/ui, common.tsx, DataTable.tsx |
 | Test/CI | tests/unit, tests/integration, tests/e2e, .github/workflows/ci.yml |
 
-Business workflows, private R2 endpoints and production reporting remain pending; inspect the isolated source via FIREBASE_DEPENDENCY_AUDIT.md and implement directly on SQL services/design system when the owning phase is authorized.
+Phase 02A business routes are in `server/routes/business.ts`. Database access is in `server/repositories/{customers,customer-import,sales,designs}.ts`. Shared contracts are in `shared/business.ts` and UI workspaces are in `src/components/business/`. Production, finishing, logistics, private R2 and reporting remain scoped to their owning phases.

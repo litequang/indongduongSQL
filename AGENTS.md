@@ -8,7 +8,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 - UI: Tailwind CSS v4, shadcn/ui with Radix primitives, Lucide, TanStack Query/Table. ReUI free compatible patterns selectively; Recharts for real reports. No paid components, Next.js or second primitive framework. Record exact sources/licenses in THIRD_PARTY_NOTICES.md.
 - SQL runtime must not import `legacy/firebase`, Firebase SDKs or the former JSON-store server. No Firebase data/account/password migration, dual database, Firestore adapter or production fallback to localStorage.
 - Preserve existing business rules and eight roles. Product quantity differs from sheets; sales products and print runs are M:N. Product finishing/no-work confirmation, warehouse sibling readiness, revision ACK and cancellation invariants are mandatory. No arbitrary Kanban state dragging.
-- Only Phase 00/01/UI Foundation authorized now. See docs/SQL_MIGRATION_ROADMAP.md. Do not implement Phase 02 without a new task.
+- Phase 00, Phase 01 and UI Foundation are complete. Phase 02A is authorized on the task branch. Phase 02B, Phase 02C, Phase 03 and deployment need separate authorization.
 
 ## Security
 
@@ -22,7 +22,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 
 1. Before a new task: `git fetch origin`, `git status --short`, inspect branch/upstream/history. Preserve uncommitted changes; never reset/overwrite another agent's work.
 2. One writer per branch. PC and Cloud working concurrently use distinct task branches/worktrees and coordinate ownership in HANDOFF.md. Never assume another environment shares local DB/state.
-3. `main` is the stable tested release target. The initial source snapshot is a provenance baseline, not a completed SQL release. Work currently on `codex/sql-foundation`. Never force-push or auto-merge untested code; merging main needs user review.
+3. `main` is the stable tested release target. The initial source snapshot records provenance. Phase 02A uses `codex/phase-02a-sales-design`, based on `codex/sql-foundation`. Never force-push or auto-merge untested code. Merging main needs user review.
 4. Never edit/push/deploy `litequang/indongduong` or Thờ Phượng Pro. Check remotes/diff/secrets before every push. Meaningful checkpoints only, push the assigned target branch.
 5. Before handoff update PROJECT_STATUS, HANDOFF, FEATURE_PARITY_MATRIX and TEST_REPORT with actual state. Record PC/CLOUD, branch, immutable checkpoint SHA, phase, completed/in-progress/pending work, files, migrations, environment, test commands/results/exit codes, known errors/blockers and next commands. A documentation-only handoff commit references the preceding tested code SHA, avoiding a circular self-SHA.
 

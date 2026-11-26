@@ -1,4 +1,6 @@
-# Phase 02 handoff — not started
+# Phase 02 handoff from Phase 01 (historical)
+
+For the current handoff after Phase 02A, see [PHASE_02B_HANDOFF.md](PHASE_02B_HANDOFF.md).
 
 Phase 01 provides independent Express/MariaDB auth, roles, users, settings, audit, migration/checksum locking, commit-ordered invalidations, optimistic versions and a new shadcn/Radix shell. It does not implement workshop production modules. Current checkpoint/evidence: HANDOFF.md, PROJECT_STATUS.md, TEST_REPORT.md.
 

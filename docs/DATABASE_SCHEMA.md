@@ -28,12 +28,36 @@ erDiagram
   settings ||--o{ setting_options : catalogs
 ```
 
-## Planned domain relations — design, not migrated tables
+## Implemented in Phase 02A
+
+`003_sales_design.sql` extends 001/002 without changing their checksums. It uses the same InnoDB, UTC, state-lock and audit conventions.
+
+| Table | Key / relationships | Purpose |
+|---|---|---|
+| business_counters | entity PK | Serialized counters for KH/SO human-facing unique codes |
+| customers | UUID PK, unique code, optional import job FK | Contact, Vietnamese address hierarchy, social channels, notes, external source/ID, version and soft deletion |
+| customer_import_jobs | UUID PK, owner FK | Filename, source, row count, confirmed policy, lifecycle and version |
+| customer_import_items | (job_id,position) PK, source record unique in job, matched and resulting customer FKs | Normalized candidate, classification, matched version and execution outcome |
+| sales_orders | UUID PK, unique code, customer, sale and confirming user FKs | Customer and staff snapshots, priority, promise date, notes and lifecycle version |
+| sales_order_items | UUID PK, parent order and immutable design version FKs | Stable draft line identity, product requirements, separate product quantity, tombstones for removed draft lines |
+| sales_order_status_history | (order_id,version) PK, order and actor FKs | Explicit transitions and timestamped actor snapshot with privileged reopen reason |
+| saved_designs | UUID PK, creator/customer/last printer FKs | Current version pointer and fields reserved for future real print activity |
+| design_versions | UUID PK, design/creator/customer FKs, (design_id,version) unique | Immutable design metadata and customer name snapshot |
+| design_version_tags | (version_id,tag) PK | Indexed, normalized, case/accent-insensitive tags |
+
+Customer contact details use first-class columns. Generated active keys enforce uniqueness on normalized nonempty phone and on nonempty `(external_source,external_id)`. Soft deletion releases active keys while retaining the customer row and linked sales. Customers can share a name. Transaction-serialized codes do not change when contact details change. Name, region, date, active identity, parent/status, priority, customer and version indexes cover point lookup and common filters/orderings. Text contains search escapes LIKE wildcards and may scan within filters.
+
+The version FK is the sales design snapshot. A new library version writes a new row with a new UUID. Order items keep their original UUID reference and still return its metadata and tags. An optional `design_versions.image_registry_id` reserves a neutral private registry reference. A 02A CHECK holds it at NULL until Phase 03 can validate the relationship and install the registry FK. Bytes, base64 and download links are absent from the image contract.
+
+## Domain relationships, including planned downstream tables
 
 ```mermaid
 erDiagram
   customers ||--o{ sales_orders : places
-  sales_orders ||--|{ sales_order_items : contains
+  sales_orders ||--o{ sales_order_items : contains
+  design_versions o|--o{ sales_order_items : selected_revision
+  customer_import_jobs ||--o{ customer_import_items : reviews
+  customers o|--o{ saved_designs : owns
   sales_order_items ||--o{ production_allocations : allocated_product_quantity
   production_items ||--o{ production_allocations : allocation
   production_orders ||--o{ production_items : contains
@@ -59,11 +83,11 @@ A sales order splits across runs; a run can combine products from several orders
 
 Products/bags are not print sheets. `sales_order_items.quantity`, allocation product quantity and accepted finished quantity share an explicit product unit. `production_orders.total_sheets` and `production_print_images.sheet_count` measure sheets. The source's latest link history often contains zero allocatedProductQuantity and is only traceability; Phase 02 must explicitly validate numeric allocation semantics with preserved workflow rules, never infer bags from sheets.
 
-At confirmation/assignment/completion/dispatch, lock owning parent(s) in stable UUID order, validate expected versions, calculate remaining quantity from committed allocations/goods/dispatch items, write outputs and audit in the same transaction, increment versions, then publish changes under the system-state lock. Unique idempotency keys make retries safe. Nonnegative CHECKs/FKs and composite same-parent constraints supplement backend checks. Do not hardcode broad management override for specialist printer/finisher/warehouse actions.
+At confirmation/assignment/completion/dispatch, take the system-state lock first, then lock owning parent(s) in stable UUID order. Validate expected versions, calculate remaining quantity from committed allocations/goods/dispatch items, write outputs and audit, increment versions and publish changes in the same transaction. Unique idempotency keys make retries safe. Nonnegative CHECKs/FKs and composite same-parent constraints supplement backend checks. Do not hardcode broad management override for specialist printer/finisher/warehouse actions.
 
 Every printed linked product passes the finishing checkpoint, including explicit no-work confirmation. Non-production products route directly to finishing or warehouse according to flags. Warehouse export checks every active sibling product and accepted stock for the entire sales order before creating/confirming a dispatch. Shipment returns enter stock only after inspection.
 
-Soft delete business entities where history must remain; retain immutable status/audit history and snapshots. Increment version and emit deleted tombstones rather than dropping records. Core users currently support lock/unlock, not deletion; deleted_at is schema preparation only. No Phase 02 table or workflow is implemented in this phase.
+Soft delete business entities where history must remain. Keep immutable status and audit history and snapshots. Each soft delete increments the version and emits a tombstone. Core user operations support lock and unlock, with deleted_at reserved for future use. Phase 02B/02C tables in the relationship diagram remain planned.
 
 ## Migration operation
 
