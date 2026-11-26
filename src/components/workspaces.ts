@@ -21,14 +21,20 @@ export const MODULES: WorkspaceModule[] = [
     description:
       "Đơn hàng, sản phẩm và tiến độ thực hiện theo từng khách hàng.",
     stage: "02A",
-    roles: [...management, "SALE"],
+    roles: [...management, "SALE", "DESIGNER"],
   },
   {
     id: "design",
+    label: "Thư viện mẫu thiết kế",
+    description: "Mẫu thiết kế và lịch sử phiên bản.",
+    stage: "02A",
+    roles: [...management, "DESIGNER", "SALE"],
+  },
+  {
+    id: "design-queue",
     label: "Hàng đợi thiết kế",
-    description:
-      "Thiết kế, mẫu và bình bài; chuẩn bị lệnh trước khi giao xuống xưởng.",
-    stage: "02A / 02B",
+    description: "Thiết kế kỹ thuật, bình bài và bàn giao sản xuất.",
+    stage: "02B",
     roles: [...management, "DESIGNER"],
   },
   {
@@ -128,3 +134,6 @@ export const WORKSPACE: Record<
     focus: ["warehouse", "shipping"],
   },
 };
+
+export const isBusinessAvailable = (id: string) =>
+  ["customers", "sales", "design"].includes(id);
