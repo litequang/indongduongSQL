@@ -114,7 +114,7 @@ export function Designs() {
           }
         >
           <SearchBox
-            label="Tìm sản phẩm, khách hàng, nhãn hoặc mã kẽm"
+            label="Tìm mẫu thiết kế"
             value={search}
             onChange={(value) => {
               setSearch(value);

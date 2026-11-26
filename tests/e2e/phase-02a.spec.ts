@@ -318,6 +318,21 @@ test.describe.serial("Phase 02A real customer, sales and design", () => {
               () => document.documentElement.scrollWidth <= innerWidth + 1,
             );
           expect(await assertWidth()).toBe(true);
+          if (size.width <= 700) {
+            const controls = await page
+              .locator(
+                ".business-table-surface .toolbar-filters input, .business-table-surface .toolbar-filters select",
+              )
+              .evaluateAll((elements) =>
+                elements
+                  .filter((node) => node.getClientRects().length > 0)
+                  .map((node) => node.getBoundingClientRect().height),
+              );
+            expect(
+              controls.every((height) => height <= 56),
+              area.path + "/mobile toolbar",
+            ).toBe(true);
+          }
           if (area.cta !== "Nhập Excel/CSV")
             await page.screenshot({
               path: `.local/screenshots/phase02a-${area.path}-${size.width}-${theme}.png`,

@@ -2468,6 +2468,11 @@ kbd {
 }
 
 /* Phase 02A business workspaces */
+.business-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .business-mobile,
 .business-mobile-control {
   display: none;
@@ -2854,6 +2859,11 @@ kbd {
   .business-table-surface .data-toolbar {
     flex-wrap: wrap;
     align-items: flex-start;
+  }
+  .business-table-surface .toolbar-filters {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
   .business-table-surface .toolbar-filters .search-field {
     max-width: 100%;

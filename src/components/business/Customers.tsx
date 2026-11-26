@@ -191,7 +191,7 @@ export function Customers() {
         title="Khách hàng"
         actions={
           manage && (
-            <>
+            <div className="business-page-actions">
               <Button variant="outline" onClick={() => setImporting(true)}>
                 <FileUp /> Nhập Excel/CSV
               </Button>
@@ -203,7 +203,7 @@ export function Customers() {
               >
                 <Plus /> Thêm khách hàng
               </Button>
-            </>
+            </div>
           )
         }
       />
