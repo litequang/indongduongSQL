@@ -47,6 +47,6 @@ Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED cover
 | User guide / deployment guide | Replace Firebase operations with SQL; preserve workflow content | 01/04 | SQL_SETUP_DOCUMENTED / BUSINESS_GUIDE_PENDING |
 | Demo/role preview | Separate dev environment only; no production mutations | 04 | DISABLED_IN_SQL |
 | UI shell/design tokens/themes | shadcn/Radix, blue neutral enterprise, responsive 6 viewports | 01 | CORE_VERIFIED |
-| PC/Cloud handoff + CI | One writer/branch, real DB tests, truthful evidence | 01 | LOCAL_VERIFIED_CI_PENDING |
+| PC/Cloud handoff + CI | One writer/branch, real DB tests, truthful evidence | 01 | VERIFIED_LOCAL_AND_CI |
 
 Phase 01 settings cover company/brand/catalog/threshold/polling fields. Source business feature toggles, custom permission editor, image/provider/backup administration and notification sound/voice remain deferred with their owning modules. R2/avatars are architecture only. Physical PWA/device and Hawk Host checks remain LOCAL_VALIDATION_REQUIRED. Test evidence: TEST_REPORT.md.

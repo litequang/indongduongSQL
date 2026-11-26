@@ -1,8 +1,8 @@
 # Project status
 
-Agent: PC. Updated 2026-11-26. Branch: codex/sql-foundation. Source provenance: SOURCE_PROVENANCE.md. Latest immutable code checkpoint is recorded in HANDOFF.md by the following documentation commit.
+Agent: PC. Updated 2026-11-26. Branch: codex/sql-foundation. Source provenance: SOURCE_PROVENANCE.md. Latest tested code checkpoint: 71a78ff0901031a8c129d8ae73a39d23e0b36fc2. Remote CI verified de88c6180057ab713ccd816efbc7a595955d46df (that code plus documentation). HANDOFF.md is ready for PC/Cloud continuation.
 
-Phase 00 completed: safe independent snapshot, architecture/Firebase/workflow/permission/UI/storage audit and roadmap. Phase 01 SQL + UI Foundation implemented and local acceptance verified. Code is pushed; follow-up remote CI verification is in progress; this is not a merged main release. Phase 02 has not started.
+Phase 00 completed: safe independent snapshot, architecture/Firebase/workflow/permission/UI/storage audit and roadmap. Phase 01 SQL + UI Foundation implemented and local acceptance verified. Code is pushed; Ubuntu CI [45783512151](https://github.com/litequang/indongduongSQL/actions/runs/45783512151) is green. **Phase 00 + Phase 01 + UI Foundation are complete for the agreed scope.** This is not a merged main release. Phase 02 has not started.
 
 Implemented: real Express/MariaDB, ordered checksummed concurrent-safe migrations, one-time secret setup, scrypt passwords, DB cookie sessions + Origin/CSRF/rate limiting, eight-role backend authority, staff lifecycle/profile/password, normalized settings, administrative audit, bounded commit-ordered invalidation feed/optimistic versions, shadcn/Radix responsive light/dark UI, isolated legacy reference, Windows/Cloud scripts, real compiled-process restart smoke and MariaDB CI workflow.
 

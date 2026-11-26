@@ -17,7 +17,7 @@ Date 2026-11-26, agent PC. Windows PowerShell 5.1, Git 2.55.0.windows.3, Node 22
 | npm audit / audit --omit=dev | 0 vulnerabilities after compatible dependency updates/overrides | 0 |
 | R2 live upload/backup | SKIP; architecture/config only, no dedicated credentials requested | not run |
 | Hawk Host live deployment / physical devices | LOCAL_VALIDATION_REQUIRED; outside this phase | not run |
-| GitHub Actions | Definition prepared; remote execution status pending push | not yet established |
+| GitHub Actions / Ubuntu + MariaDB 11.4.9 | PASS; run [45783512151](https://github.com/litequang/indongduongSQL/actions/runs/45783512151), all steps success | 0 |
 
 Integration exercises: DB name isolation/version; concurrent migration lock and safe rerun; public health/ready/status; anonymous protected reads; bootstrap wrong Origin/secret and concurrent race/second-call denial; correct/wrong password; HttpOnly/SameSite/no-store/CSRF; creation and reads across all eight roles; forbidden role headers/self escalation/Admin→Developer; server paging/filter/sort; settings writes by role; optimistic user/settings races; ordered invalidation feed; backend close/restart with persistent session/data; role/lock/reset/revoke invalidation; own password invalidating both sessions; old/new password; logout; durable username/IP brute-force counters; partial-DDL failed state, statement checkpoint and changed-checksum rejection.
 
@@ -33,4 +33,4 @@ Nonblocking tooling note: npm reports ESLint 9 as deprecated; lint itself passes
 
 Additional process evidence: `npm run test:restart` PASS (exit 0) against the allowlisted real test DB. The compiled app.cjs runs in Node process A, logs in a synthetic probe user, exits, then Node process B resolves the same cookie/user from MariaDB. Its temporary user/session/audit fixtures are removed afterward. The test chooses an ephemeral loopback port, never a production service. CI now includes this check after build.
 
-Remote CI first run 45782024438: npm ci, typecheck, lint, unit, preserved tests, MariaDB integration, build/runtime check PASS; the final Linux dark-surface contrast scan failed. The card foreground is now explicit and automated contrast sampling uses whole visible surfaces; the separate responsive geometry matrix is unchanged. A follow-up run is required before remote CI is reported green.
+Remote CI first run 45782024438: npm ci, typecheck, lint, unit, preserved tests, MariaDB integration, build/runtime check PASS; the final Linux dark-surface contrast scan failed. The card foreground is now explicit and automated contrast sampling uses whole visible surfaces; the separate responsive geometry matrix is unchanged. Follow-up run [45783512151](https://github.com/litequang/indongduongSQL/actions/runs/45783512151) completed success for all steps, including four browser suites and the separate real-process restart test.
