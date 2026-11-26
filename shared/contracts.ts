@@ -84,7 +84,7 @@ export interface Page<T> {
 export interface ChangePage {
   changes: {
     sequence: string;
-    entity: "users" | "settings";
+    entity: ChangeEntity;
     entityId: string;
     version: number;
     deleted: boolean;
@@ -108,3 +108,6 @@ export function canManageTarget(actor: Role, target: Role): boolean {
     actor === "DEVELOPER" || (actor === "ADMIN" && ADMIN_ROLES.includes(target))
   );
 }
+
+export type ChangeEntity =
+  "users" | "settings" | "customers" | "sales_orders" | "saved_designs";

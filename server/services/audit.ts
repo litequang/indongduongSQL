@@ -1,3 +1,4 @@
+import type { ChangeEntity } from "../../shared/contracts";
 import type { PoolConnection } from "mysql2/promise";
 import { rows } from "../database/pool";
 export async function audit(
@@ -15,7 +16,7 @@ export async function audit(
 // Caller holds system_state lock before ANY mutation. No auto-increment cursor gaps.
 export async function changed(
   db: PoolConnection,
-  entity: "users" | "settings",
+  entity: ChangeEntity,
   entityId: string,
   version: number,
   deleted = false,
