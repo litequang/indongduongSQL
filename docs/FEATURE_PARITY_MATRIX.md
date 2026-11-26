@@ -1,15 +1,15 @@
 # Feature parity matrix
 
-Canonical scope inventory. Status at Phase 00: AUDITED / NOT_MIGRATED. Update the status column with actual evidence; UI visibility is never backend authorization. `legacy/firebase/` paths are reference only after isolation.
+Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED covers the implemented foundation, not all source feature options. UI visibility is never backend authorization. `legacy/firebase/` is reference only.
 
 | Feature / source owner | Required invariant | SQL phase | Status |
 |---|---|---|---|
-| Login/AuthContext, LoginModal | Server identity, no PIN fallback or token localStorage | 01 | NOT_MIGRATED |
-| First run / BootstrapFirstRun | One Developer; secret; race-safe; never anonymous takeover | 01 | NOT_MIGRATED |
-| Staff / provisioning service | 8 roles; Admin cannot administer Admin/Developer | 01 | NOT_MIGRATED |
-| Profile/password/session | Self fields only; revoke sessions on sensitive changes | 01 | NOT_MIGRATED |
-| Settings / ConfigContext | Authorized writes, explicit remote errors and concurrency | 01 | NOT_MIGRATED |
-| Permissions / rules + workflowAuth | Backend action/object policy; current specialist roles remain exact | 01/02 | NOT_MIGRATED |
+| Login/AuthContext, LoginModal | Server identity, no PIN fallback or token localStorage | 01 | CORE_VERIFIED |
+| First run / BootstrapFirstRun | One Developer; secret; race-safe; never anonymous takeover | 01 | CORE_VERIFIED |
+| Staff / provisioning service | 8 roles; Admin cannot administer Admin/Developer | 01 | CORE_VERIFIED |
+| Profile/password/session | Self fields only; revoke sessions on sensitive changes | 01 | CORE_VERIFIED |
+| Settings / ConfigContext | Authorized writes, explicit remote errors and concurrency | 01 | CORE_VERIFIED |
+| Permissions / rules + workflowAuth | Backend action/object policy; current specialist roles remain exact | 01/02 | FOUNDATION_VERIFIED / WORKFLOWS_PENDING |
 | Custom role/user permission editor | Do not permit UI permission overrides to bypass workflow authority | 02/04 | NOT_MIGRATED |
 | Customers / customerRepository | Soft delete; search; commercial roles | 02A | NOT_MIGRATED |
 | CSV/Excel / customer-import | Normalize, preview, duplicate handling, import job provenance | 02A | NOT_MIGRATED |
@@ -38,13 +38,15 @@ Canonical scope inventory. Status at Phase 00: AUDITED / NOT_MIGRATED. Update th
 | Shipping/ViettelPost settings | Legal transition graph; sales authority; inspected returns | 02C | NOT_MIGRATED |
 | Comments | Conversation cannot replace ACK/issues/cancellation | 02B | NOT_MIGRATED |
 | Notifications/sound/voice | Recipient scoped; private cache never persisted by SW | 03 | NOT_MIGRATED |
-| Audit log | Transactional administrative events; no secrets in details | 01/03 | NOT_MIGRATED |
+| Audit log | Transactional administrative events; no secrets in details | 01/03 | ADMIN_VERIFIED / BUSINESS_PENDING |
 | Statistics/reports/export | Backend authorized datasets; Recharts when real reporting exists | 02/03 | NOT_MIGRATED |
 | Image uploads/read/delete | Private R2; validated staging; authorized registry | 03 | ARCHITECTURE_ONLY |
 | Provider routing/failover | Explicit new-project R2 config; no Firebase fallback | 03 | ARCHITECTURE_ONLY |
 | Image backup/coverage/verify/restore | Bounded jobs; checksums; missing-only restore | 03 | NOT_MIGRATED |
-| PWA/install/update/offline | Public shell only; no private API caching | 01 | NOT_MIGRATED |
-| User guide / deployment guide | Replace Firebase operations with SQL; preserve workflow content | 01/04 | NOT_MIGRATED |
+| PWA/install/update/offline | Public shell only; no private API caching | 01 | CORE_VERIFIED |
+| User guide / deployment guide | Replace Firebase operations with SQL; preserve workflow content | 01/04 | SQL_SETUP_DOCUMENTED / BUSINESS_GUIDE_PENDING |
 | Demo/role preview | Separate dev environment only; no production mutations | 04 | DISABLED_IN_SQL |
-| UI shell/design tokens/themes | shadcn/Radix, blue neutral enterprise, responsive 6 viewports | 01 | NOT_MIGRATED |
-| PC/Cloud handoff + CI | One writer/branch, real DB tests, truthful evidence | 01 | IN_PROGRESS |
+| UI shell/design tokens/themes | shadcn/Radix, blue neutral enterprise, responsive 6 viewports | 01 | CORE_VERIFIED |
+| PC/Cloud handoff + CI | One writer/branch, real DB tests, truthful evidence | 01 | LOCAL_VERIFIED_CI_PENDING |
+
+Phase 01 settings cover company/brand/catalog/threshold/polling fields. Source business feature toggles, custom permission editor, image/provider/backup administration and notification sound/voice remain deferred with their owning modules. R2/avatars are architecture only. Physical PWA/device and Hawk Host checks remain LOCAL_VALIDATION_REQUIRED. Test evidence: TEST_REPORT.md.
