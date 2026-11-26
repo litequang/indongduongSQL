@@ -31,3 +31,41 @@ Settings DTO: companyName, shortName, phone, address, website, slogan, primaryCo
 Change events contain sequence, entity(users/settings), entityId, version, deleted. The feed carries invalidations/tombstones only, no universal private payload. Read current bounded endpoint after invalidation. Phase 01 retains events without pruning; future retention requires an explicit cursor-expired/full-refresh protocol. Every publishing mutation takes system_state lock first and retains it through commit, avoiding late-commit gaps. Stale writes receive 409 and must be reviewed/reloaded, never silently retried as a merge.
 
 Production business, image upload, JSON-store sync, AI, bulk overwrite and old unauthenticated `/orders`/`config` APIs are absent. Unfinished UI modules cannot issue a successful fake mutation.
+
+## Phase 02A business API
+
+Authentication, Origin, CSRF and no-store follow the existing contract. Error codes for actionable business conflicts include `CUSTOMER_DUPLICATE`, `VERSION_CONFLICT`, `INVALID_STATUS`, `REQUEST_CONFLICT` and `IMPORT_BATCH_ORDER`. Normal bodies are bounded to 64 KiB. Sales create/update and import staging accept up to 512 KiB of uncompressed JSON after Origin verification. Shared DTO and input schemas live in `shared/business.ts`. Unknown fields, including caller-supplied stage, role, owner, stock, print sheets or image data, are rejected.
+
+| Method and path | Request and response |
+|---|---|
+| GET /customers | Search by name/code/phone/external ID. Province, active=active/deleted/all, sort=name/code/createdAt and standard paging. Returns Page<Customer>. |
+| GET /customers/:id | Returns customer and latest activity. Use the sales list with customerId to page its order history. |
+| POST /customers | UUID id and CustomerInput. Same actor and unchanged payload can retry with that UUID. Returns customer on 201. |
+| PATCH /customers/:id | Changed CustomerInput fields and expected version. Omitted fields are preserved. Returns the saved customer. |
+| POST /customers/check-duplicate | CustomerInput plus optional excludeId. Returns matched IDs, codes and names for commercial roles. The server validates again at save time. |
+| POST /customers/:id/delete | Expected version. Soft delete with history preservation. |
+| POST /customers/bulk-delete | 1–50 unique id/version pairs. The whole request rolls back if any pair fails. |
+| GET /customer-imports | Owner's job history with page/pageSize. |
+| POST /customer-imports | id, fileName, CSV_IMPORT/EXCEL_IMPORT source, totalRows 1–500. Same request may be replayed. |
+| GET /customer-imports/:id | Job status, version and persisted counts. |
+| GET /customer-imports/:id/items | Owner's paginated preview and per-row results. |
+| POST /customer-imports/:id/rows | offset plus 1–20 entries of rowNumber and mapped values. Exact replays are safe. Last batch moves the job to REVIEW. |
+| POST /customer-imports/:id/confirm | Version and policy SKIP or UPDATE. Starts execution after review. |
+| POST /customer-imports/:id/process | Empty JSON. Processes at most 20 pending rows and returns authoritative progress. Completed retry returns the same result. |
+| POST /customer-imports/:id/cancel | Expected version in STAGING or REVIEW. |
+| GET /sales-orders | Search by order code, customer snapshot or active item name. Filters customerId, status and priority. Sort code/createdAt/expectedDeliveryDate. Returns Page<SalesOrder>. |
+| GET /sales-orders/:id | Order, items, most recent status history and action audit. Every item includes its exact design snapshot if selected. |
+| POST /sales-orders | Client request UUID, customerId, priority/date/notes and up to 30 items with stable UUIDs. Returns the new draft. |
+| PATCH /sales-orders/:id | Complete draft input and expected version. Omitted prior draft items are soft deleted. |
+| POST /sales-orders/:id/confirm | Version. DRAFT with at least one active item. Marks required production products WAITING_DESIGN and other items CONFIRMED. |
+| POST /sales-orders/:id/cancel | Version. Blocks cancelled, ready-to-ship, shipped, delivered, completed or active/completed production. |
+| POST /sales-orders/:id/force-reopen | Version and required reason. Admin/Developer with a delivered or completed order. Eligible states require the downstream implementation. |
+| GET /saved-designs | Search name/customer/paper/tag/plate reference. Filters customerId and paperType. Sort productName/updatedAt and standard paging. |
+| GET /saved-designs/:id | Current version and latest design audit entries. |
+| GET /saved-designs/:id/versions | Page of immutable revisions, newest revision first. |
+| POST /saved-designs | Request UUID and design metadata. Creates version 1. |
+| PATCH /saved-designs/:id | Complete design metadata plus expected version. Appends a revision and moves the current pointer. |
+
+Lists use `page` (default 1), `pageSize` (default 20, maximum 100), and where documented `direction=asc/desc`. Customer ID links resolve on the backend. Customer updates preserve their import provenance. Quantities count individual BAG units. A design response reserves nullable `image: { registryId }`. Current designs return `null` for images.
+
+`GET /changes` adds invalidations for `customers`, `sales_orders` and `saved_designs`. Customers send a tombstone on retirement. Customer/sales/design events contain opaque entity IDs and versions and use the same authenticated read scope as their endpoints. Import jobs are actor-scoped and are excluded from the global feed.

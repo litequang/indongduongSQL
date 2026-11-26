@@ -49,6 +49,17 @@ export function errorHandler(
     });
     return;
   }
+  if (error?.type === "encoding.unsupported") {
+    res
+      .status(415)
+      .json({
+        error: {
+          code: "INVALID_BODY",
+          message: "Nội dung nén không được hỗ trợ.",
+        },
+      });
+    return;
+  }
   const known = error instanceof ApiError;
   if (!known)
     console.error(

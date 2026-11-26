@@ -1,14 +1,14 @@
 # Role workspaces
 
-All roles share UI tokens and primitives. Actual navigation definitions and priorities are centralized in src/components/workspaces.ts; backend capability checks are in shared/contracts.ts and server routes. Menu visibility does not grant API authority.
+All roles share UI tokens and primitives. Actual navigation definitions and priorities are centralized in src/components/workspaces.ts. Backend capability checks are in shared/contracts.ts, shared/business.ts and server routes. Menu visibility does not grant API authority.
 
-| Role | Dashboard and primary navigation | Phase 01 usable actions |
+| Role | Dashboard and primary navigation | Usable actions through Phase 02A |
 |---|---|---|
-| DEVELOPER | System, users, settings, storage, audit | All staff hierarchy management, own profile, settings, audit |
-| ADMIN | Overall administration, users, settings, operations | Manage six lower roles, own profile, settings, audit |
-| MANAGER | Production control, finishing, warehouse | Directory, own profile/password, read configuration; business queues pending |
-| SALE | Customers, sales orders, shipment progress | Directory, profile/password, read configuration; commercial work pending |
-| DESIGNER | Design queue, samples/imposition, production/plates | Directory, profile/password, read configuration; design work pending |
+| DEVELOPER | System, users, settings, storage, audit | All staff hierarchy management, own profile, settings, audit, customers/import, sales and designs |
+| ADMIN | Overall administration, users, settings, operations | Manage six lower roles, own profile, settings, audit, customers/import, sales and designs |
+| MANAGER | Production control, finishing, warehouse | Directory, own profile/password, customers/import, sales and designs. Production queues pending |
+| SALE | Customers, sales orders, shipment progress | Directory, profile/password, customers/import, sales lifecycle and saved designs |
+| DESIGNER | Design queue, samples/imposition, production/plates | Directory, profile/password, sales draft creation and design versioning. Technical queue pending |
 | PRINTER | Assigned print work, acceptance/ACK/start/completion, plates | Directory, profile/password, read configuration; task actions pending |
 | FINISHER | Per-product finishing queue and explicit confirmation | Directory, profile/password, read configuration; queue pending |
 | WAREHOUSE | Finished goods, dispatch and delivery | Directory, profile/password, read configuration; stock actions pending |

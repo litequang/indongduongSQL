@@ -11,6 +11,7 @@ import { requireOrigin } from "./auth/session";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerUserRoutes } from "./routes/users";
 import { registerSettingsRoutes } from "./routes/settings";
+import { registerBusinessRoutes } from "./routes/business";
 export async function createApp(pool: Pool, config: Config) {
   const app = express();
   app.disable("x-powered-by");
@@ -40,7 +41,27 @@ export async function createApp(pool: Pool, config: Config) {
     res.set("Pragma", "no-cache");
     next();
   });
-  app.use("/api", express.json({ limit: "64kb", strict: true }));
+  const standardJson = express.json({ limit: "64kb", strict: true });
+  const businessJson = express.json({
+    limit: "512kb",
+    strict: true,
+    inflate: false,
+  });
+  app.use("/api", (req, res, next) => {
+    const largeBusinessRequest =
+      (req.method === "POST" &&
+        /^\/(?:sales-orders\/?$|customer-imports\/[^/]+\/rows\/?$)/i.test(
+          req.path,
+        )) ||
+      (req.method === "PATCH" && /^\/sales-orders\/[^/]+\/?$/i.test(req.path));
+    if (!largeBusinessRequest) return standardJson(req, res, next);
+    try {
+      requireOrigin(req, config);
+      businessJson(req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  });
   // Body parsing precedes Origin so malformed payload errors remain consistent.
   app.use("/api", (req, res, next) => {
     try {
@@ -57,6 +78,7 @@ export async function createApp(pool: Pool, config: Config) {
   await registerAuthRoutes(app, pool, config);
   registerUserRoutes(app, pool, config);
   registerSettingsRoutes(app, pool, config);
+  registerBusinessRoutes(app, pool, config);
   app.use("/api", (_req, res) =>
     res
       .status(404)

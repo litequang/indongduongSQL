@@ -58,6 +58,10 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
             void client.invalidateQueries({ queryKey: ["users"] });
             void client.invalidateQueries({ queryKey: ["session"] });
           }
+          for (const entity of ["customers", "sales_orders", "saved_designs"]) {
+            if (delta.changes.some((event) => event.entity === entity))
+              void client.invalidateQueries({ queryKey: [entity] });
+          }
           if (delta.changes.some((x) => x.entity === "settings"))
             void client.invalidateQueries({ queryKey: ["settings"] });
         }

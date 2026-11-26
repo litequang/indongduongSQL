@@ -27,6 +27,16 @@ assert(
   state.initialized_at,
   "Run test:integration before the compiled restart smoke.",
 );
+const [sale] = await rows(
+  pool,
+  `SELECT o.id,o.code,o.customer_id,i.design_version_id
+  FROM sales_orders o JOIN sales_order_items i ON i.order_id=o.id
+  WHERE i.design_version_id IS NOT NULL ORDER BY o.id LIMIT 1`,
+);
+assert(
+  sale,
+  "Run the complete integration suite to create a persisted sales and design probe.",
+);
 const id = randomUUID();
 const username = `restart_${randomBytes(6).toString("hex")}`;
 const password = randomBytes(24).toString("base64url");
@@ -120,10 +130,27 @@ try {
   });
   assert.equal(directory.status, 200);
   assert.equal((await directory.json()).items[0].id, id);
+  const order = await fetch(origin + "/api/sales-orders/" + sale.id, {
+    headers: { Cookie: cookie },
+  });
+  assert.equal(order.status, 200);
+  const detail = await order.json();
+  assert.equal(detail.order.code, sale.code);
+  assert(
+    detail.items.some(
+      (item: { designSnapshot: { id: string } | null }) =>
+        item.designSnapshot?.id === sale.design_version_id,
+    ),
+  );
+  const customer = await fetch(origin + "/api/customers/" + sale.customer_id, {
+    headers: { Cookie: cookie },
+  });
+  assert.equal(customer.status, 200);
+  assert.equal((await customer.json()).customer.id, sale.customer_id);
   assert.equal((await fetch(origin + "/server.cjs")).status, 404);
   assert.equal((await fetch(origin + "/build/server.cjs")).status, 404);
   console.log(
-    "PASS compiled Node process restart: MariaDB user/session survive, backend artifacts stay private.",
+    "PASS compiled Node process restart: MariaDB session, customer, order and design snapshot survive. Backend artifacts stay private.",
   );
 } finally {
   await stop();

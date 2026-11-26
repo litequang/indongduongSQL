@@ -1,6 +1,6 @@
 # Feature parity matrix
 
-Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED covers the implemented foundation, not all source feature options. UI visibility is never backend authorization. `legacy/firebase/` is reference only.
+Canonical scope inventory through Phase 02A. CORE_VERIFIED covers the implemented foundation, not all source feature options. UI visibility is never backend authorization. `legacy/firebase/` is reference only.
 
 | Feature / source owner | Required invariant | SQL phase | Status |
 |---|---|---|---|
@@ -11,11 +11,12 @@ Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED cover
 | Settings / ConfigContext | Authorized writes, explicit remote errors and concurrency | 01 | CORE_VERIFIED |
 | Permissions / rules + workflowAuth | Backend action/object policy; current specialist roles remain exact | 01/02 | FOUNDATION_VERIFIED / WORKFLOWS_PENDING |
 | Custom role/user permission editor | Do not permit UI permission overrides to bypass workflow authority | 02/04 | NOT_MIGRATED |
-| Customers / customerRepository | Soft delete; search; commercial roles | 02A | NOT_MIGRATED |
-| CSV/Excel / customer-import | Normalize, preview, duplicate handling, import job provenance | 02A | NOT_MIGRATED |
-| Sales orders / salesOrderRepository | Draft editing vs authoritative confirm/cancel/reopen | 02A | NOT_MIGRATED |
-| Sales products | Product quantity; requiresProduction/requiresFinishing paths | 02A | NOT_MIGRATED |
-| Saved designs + image versions | Reuse snapshots without rewriting past orders | 02A | NOT_MIGRATED |
+| Customers / customerRepository | Commercial writes, active identity dedup, soft delete, history, audit | 02A | IMPLEMENTED |
+| CSV/XLSX / customer-import | Normalize, preview, skip or explicit update, actor-scoped job and row results | 02A | IMPLEMENTED |
+| Sales orders / salesOrderRepository | Draft, confirm, cancel and audit. Privileged reopen requires a delivered/completed order | 02A/02C | SALES_IMPLEMENTED / DOWNSTREAM_PENDING |
+| Sales products | BAG quantity, stable item UUIDs, explicit production and finishing requirements | 02A/02C | SALES_IMPLEMENTED / FULFILLMENT_PENDING |
+| Saved designs | Immutable metadata versions, selection and reuse, audit | 02A | IMPLEMENTED |
+| Design image references | Private registry ID on the design version | 03 | ARCHITECTURE_ONLY |
 | Designer queue / QuickOrderComposer | Free technical text and unique/confident @printer matching | 02B | NOT_MIGRATED |
 | Device drafts / IndexedDB | Local Blob authority; explicit recovery, no false official success | 02B | NOT_MIGRATED |
 | Batch official send | Idempotency and per-row partial success | 02B | NOT_MIGRATED |
@@ -29,7 +30,7 @@ Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED cover
 | Reprint/supplemental runs | Link to original product without overwriting prior run | 02B | NOT_MIGRATED |
 | Cancellation | Separate workflow; assigned printer responds before start | 02B | NOT_MIGRATED |
 | Production issues | Reporter cancels; recipients resolve; current issues non-blocking | 02B | NOT_MIGRATED |
-| Urgent flags | Metadata, never status or authorization bypass | 02A/B/C | NOT_MIGRATED |
+| Urgent flags | Order and product metadata, with existing transition policy | 02A/B/C | SALES_IMPLEMENTED / DOWNSTREAM_PENDING |
 | Product finishing / finishing_tasks | Claim/complete; explicit no-work checkpoint | 02C | NOT_MIGRATED |
 | Legacy order-level finishing | Reconcile with product-centric V2 before porting; no parallel legacy flow | 02C | NOT_MIGRATED |
 | Finished goods | Aggregate accepted product quantities; exact remaining stock | 02C | NOT_MIGRATED |
@@ -38,7 +39,7 @@ Canonical scope inventory at the tested Phase 01 checkpoint. CORE_VERIFIED cover
 | Shipping/ViettelPost settings | Legal transition graph; sales authority; inspected returns | 02C | NOT_MIGRATED |
 | Comments | Conversation cannot replace ACK/issues/cancellation | 02B | NOT_MIGRATED |
 | Notifications/sound/voice | Recipient scoped; private cache never persisted by SW | 03 | NOT_MIGRATED |
-| Audit log | Transactional administrative events; no secrets in details | 01/03 | ADMIN_VERIFIED / BUSINESS_PENDING |
+| Audit log | Transactional administration, customers, import, sales and design. Additional business stages pending | 01/02/03 | FOUNDATION_AND_02A_IMPLEMENTED |
 | Statistics/reports/export | Backend authorized datasets; Recharts when real reporting exists | 02/03 | NOT_MIGRATED |
 | Image uploads/read/delete | Private R2; validated staging; authorized registry | 03 | ARCHITECTURE_ONLY |
 | Provider routing/failover | Explicit new-project R2 config; no Firebase fallback | 03 | ARCHITECTURE_ONLY |

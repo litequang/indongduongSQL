@@ -2,13 +2,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { once } from "node:events";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, copyFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Server } from "node:http";
 import { testConfig, resetTestData } from "../test-environment";
 import { createPool, rows, assertDatabase } from "../../server/database/pool";
-import { migrate, isReady } from "../../server/database/migrate";
+import {
+  migrate,
+  isReady,
+  migrationDirectory,
+} from "../../server/database/migrate";
 import { createApp } from "../../server/app";
 import {
   ROLES,
@@ -16,38 +20,7 @@ import {
   type User,
   type Settings,
 } from "../../shared/contracts";
-class Client {
-  cookie = "";
-  csrf = "";
-  constructor(public base: string) {}
-  async request(
-    url: string,
-    method = "GET",
-    body?: unknown,
-    headers: Record<string, string> = {},
-  ) {
-    const response = await fetch(this.base + "/api" + url, {
-      method,
-      headers: {
-        ...(method !== "GET"
-          ? {
-              "Content-Type": "application/json",
-              Origin: this.base,
-              "X-CSRF-Token": this.csrf,
-            }
-          : {}),
-        ...(this.cookie ? { Cookie: this.cookie } : {}),
-        ...headers,
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    const cookie = response.headers.get("set-cookie");
-    if (cookie) this.cookie = cookie.split(";")[0];
-    const data = await response.json();
-    if (data.csrfToken) this.csrf = data.csrfToken;
-    return { status: response.status, data, headers: response.headers };
-  }
-}
+import { Client } from "./http-client";
 test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
   const config = testConfig();
   const pool = createPool(config);
@@ -83,11 +56,45 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
       const version = await assertDatabase(pool, config.DB_NAME);
       assert.match(version, /MariaDB/);
       console.log(`REAL_DATABASE=${version}; NAME=${config.DB_NAME}`);
-      const applied = await Promise.all([
-        migrate(pool, config.DB_NAME),
-        migrate(pool, config.DB_NAME),
-      ]);
-      assert(applied.flat().length === 0 || applied.flat().length === 2);
+      const existing = await rows(
+        pool,
+        "SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='schema_migrations'",
+      );
+      if (Number(existing[0].n) === 0) {
+        const base = await mkdtemp(path.join(os.tmpdir(), "idd-foundation-"));
+        try {
+          for (const name of ["001_identity.sql", "002_configuration_sync.sql"])
+            await copyFile(
+              path.join(migrationDirectory, name),
+              path.join(base, name),
+            );
+          assert.deepEqual(await migrate(pool, config.DB_NAME, base), [
+            "001_identity.sql",
+            "002_configuration_sync.sql",
+          ]);
+          await pool.execute(
+            "UPDATE system_state SET change_sequence=17 WHERE id=1",
+          );
+          const applied = await Promise.all([
+            migrate(pool, config.DB_NAME),
+            migrate(pool, config.DB_NAME),
+          ]);
+          assert.deepEqual(applied.flat(), ["003_sales_design.sql"]);
+          const [state] = await rows(
+            pool,
+            "SELECT change_sequence FROM system_state WHERE id=1",
+          );
+          assert.equal(String(state.change_sequence), "17");
+        } finally {
+          await rm(base, { recursive: true, force: true });
+        }
+      } else {
+        const applied = await Promise.all([
+          migrate(pool, config.DB_NAME),
+          migrate(pool, config.DB_NAME),
+        ]);
+        assert.deepEqual(applied.flat(), []);
+      }
       assert.deepEqual(await migrate(pool, config.DB_NAME), []);
       assert.equal(await isReady(pool), true);
       await assert.rejects(assertDatabase(pool, "some_other_project"));

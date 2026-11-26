@@ -28,7 +28,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
 import { canManageUsers, ROLE_LABELS } from "../../shared/contracts";
-import { MODULES } from "./workspaces";
+import { isBusinessAvailable, MODULES } from "./workspaces";
 import { Brand } from "./AuthLayout";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -56,6 +56,7 @@ const ICONS: Record<string, typeof Users> = {
   customers: BookUser,
   sales: FileText,
   design: Shapes,
+  "design-queue": Layers3,
   production: Factory,
   plates: Layers3,
   finishing: Shapes,
@@ -167,7 +168,7 @@ export function AppShell({
             key={m.id}
             id={m.id}
             page={page}
-            pending
+            pending={!isBusinessAvailable(m.id)}
             onClick={() => mobile && setMenu(false)}
           />
         ))}

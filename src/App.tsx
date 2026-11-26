@@ -20,6 +20,10 @@ import {
   Message,
 } from "./components/common";
 import { Button } from "./components/ui/button";
+import { Customers } from "./components/business/Customers";
+import { Sales } from "./components/business/Sales";
+import { Designs } from "./components/business/Designs";
+import { idSchema } from "../shared/business";
 export default function App() {
   const auth = useAuth();
   const setup = useQuery({
@@ -59,11 +63,16 @@ export default function App() {
   );
 }
 function Workspace() {
-  const [page, setPage] = useState(() => location.hash.slice(1) || "home");
+  const [route, setRoute] = useState(() => location.hash.slice(1) || "home");
+  const [page, selection] = route.split("/");
+  const { user } = useAuth();
+  const showBusiness = MODULES.some(
+    (module) => module.id === page && module.roles.includes(user!.role),
+  );
   const { error, loading, refresh } = useConfig();
   useEffect(() => {
     const update = () => {
-      setPage(location.hash.slice(1) || "home");
+      setRoute(location.hash.slice(1) || "home");
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", update);
@@ -85,6 +94,18 @@ function Workspace() {
         <SettingsModal />
       ) : page === "audit" ? (
         <AuditPage />
+      ) : page === "customers" && showBusiness ? (
+        <Customers />
+      ) : page === "sales" && showBusiness ? (
+        <Sales
+          selection={
+            selection === "new" || idSchema.safeParse(selection).success
+              ? selection
+              : undefined
+          }
+        />
+      ) : page === "design" && showBusiness ? (
+        <Designs />
       ) : (
         <UnavailableModule id={page} />
       )}

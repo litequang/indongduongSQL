@@ -57,6 +57,15 @@ export async function resetTestData(
   try {
     await db.beginTransaction();
     for (const table of [
+      "sales_order_status_history",
+      "sales_order_items",
+      "sales_orders",
+      "design_version_tags",
+      "design_versions",
+      "saved_designs",
+      "customer_import_items",
+      "customers",
+      "customer_import_jobs",
       "sessions",
       "audit_logs",
       "change_events",

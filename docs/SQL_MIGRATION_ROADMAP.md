@@ -13,6 +13,6 @@ Migration means replacing the application architecture and versioning SQL schema
 | 04 | Remove reference Firebase code; full feature parity | Matrix complete, no Firebase dependency |
 | 05 | Hawk Host staging/deployment and workshop acceptance | Account-specific limits and real devices validated |
 
-Phase 01 now includes UI Foundation (2026-11-26 change request): shadcn/ui, Radix primitives, Tailwind v4, TanStack Table/Query, Lucide, light/dark responsive role workspaces. Advanced ReUI patterns and Recharts reporting follow the owning business module; no paid component or second primitive framework. PC/Cloud workflow and CI are also Phase 01 scope. Do not begin Phase 02 during this task.
+Phase 01 includes UI Foundation (2026-11-26 change request) with shadcn/ui, Radix primitives, Tailwind v4, TanStack Table/Query, Lucide and light/dark responsive role workspaces. Advanced ReUI patterns and Recharts reporting follow the owning business module. The single primitive system uses free components. PC/Cloud workflow and CI are also Phase 01 scope.
 
-See PROJECT_STATUS.md for actual progress, TEST_REPORT.md for evidence, and PHASE_02_HANDOFF.md for the next module. This file is the canonical phased roadmap; ROADMAP.md is an entry link.
+See PROJECT_STATUS.md for progress, TEST_REPORT.md for evidence, and PHASE_02B_HANDOFF.md for the next module. Phase 02A preserves stable sales product IDs and explicit flags. Phase 02B implements the allocation tables and production workflows. This file is the canonical phased roadmap. ROADMAP.md links here.

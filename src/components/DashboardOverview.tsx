@@ -28,7 +28,7 @@ import {
   EmptyState,
   StatusBadge,
 } from "./common";
-import { WORKSPACE, MODULES } from "./workspaces";
+import { isBusinessAvailable, WORKSPACE, MODULES } from "./workspaces";
 const ACTION_LABELS: Record<string, string> = {
   SYSTEM_BOOTSTRAPPED: "Thiết lập không gian làm việc",
   LOGIN: "Đăng nhập hệ thống",
@@ -171,7 +171,8 @@ export function DashboardOverview() {
           <div className="quick-links">
             {workspace.focus.map((id) => {
               const module = MODULES.find((m) => m.id === id);
-              const implemented = id === "users" || id === "settings";
+              const implemented =
+                id === "users" || id === "settings" || isBusinessAvailable(id);
               return (
                 <a href={`#${id}`} key={id}>
                   <span className="quick-link-icon">
@@ -237,14 +238,12 @@ export function DashboardOverview() {
               />
             ) : (
               <ActivityTimeline
-                items={audit
-                  .data!.items.slice(0, 5)
-                  .map((item) => ({
-                    id: item.id,
-                    title: displayAction(item.action),
-                    description: item.actorName,
-                    time: date(item.createdAt),
-                  }))}
+                items={audit.data!.items.slice(0, 5).map((item) => ({
+                  id: item.id,
+                  title: displayAction(item.action),
+                  description: item.actorName,
+                  time: date(item.createdAt),
+                }))}
               />
             )
           ) : (

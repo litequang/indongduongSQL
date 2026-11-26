@@ -52,6 +52,9 @@ export function DataTable<T>({
   onSorting,
   loading,
   onRow,
+  label = "nhân viên",
+  preferenceKey = "users",
+  renderMobile,
 }: {
   data: T[];
   columns: ColumnDef<T, any>[];
@@ -64,10 +67,17 @@ export function DataTable<T>({
   onSorting: (sort: SortingState) => void;
   loading?: boolean;
   onRow?: (row: T) => void;
+  label?: string;
+  preferenceKey?: string;
+  renderMobile?: (row: T) => ReactNode;
 }) {
+  const columnKey =
+    preferenceKey === "users"
+      ? "idd.ui.user-columns"
+      : "idd.ui." + preferenceKey + "-columns";
   const [visibility, setVisibility] = useState<VisibilityState>(() => {
     try {
-      return JSON.parse(localStorage.getItem("idd.ui.user-columns") || "{}");
+      return JSON.parse(localStorage.getItem(columnKey) || "{}");
     } catch {
       return {};
     }
@@ -90,7 +100,7 @@ export function DataTable<T>({
       setVisibility((current) => {
         const next = typeof update === "function" ? update(current) : update;
         try {
-          localStorage.setItem("idd.ui.user-columns", JSON.stringify(next));
+          localStorage.setItem(columnKey, JSON.stringify(next));
         } catch {
           /* Optional UI preference. */
         }
@@ -101,8 +111,14 @@ export function DataTable<T>({
   return (
     <div className="data-table">
       <div className="table-meta">
-        <span>{total.toLocaleString("vi-VN")} nhân viên</span>
-        <details className="column-picker">
+        <span>
+          {total.toLocaleString("vi-VN")} {label}
+        </span>
+        <details
+          className={
+            renderMobile ? "column-picker business-desktop" : "column-picker"
+          }
+        >
           <summary>
             <SlidersHorizontal size={14} /> Cột hiển thị
           </summary>
@@ -127,59 +143,93 @@ export function DataTable<T>({
         <LoadingSkeleton />
       ) : data.length === 0 ? (
         <EmptyState
-          title="Chưa tìm thấy nhân viên"
-          description="Thử thay đổi tìm kiếm hoặc thêm nhân viên đầu tiên."
+          title={`Chưa tìm thấy ${label}`}
+          description={
+            preferenceKey === "users"
+              ? "Thử thay đổi tìm kiếm hoặc thêm nhân viên đầu tiên."
+              : "Thử thay đổi tìm kiếm hoặc bộ lọc."
+          }
         />
       ) : (
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((group) => (
-              <TableRow key={group.id}>
-                {group.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        className="sort-button"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
+        <>
+          <div className={renderMobile ? "business-desktop" : undefined}>
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((group) => (
+                  <TableRow key={group.id}>
+                    {group.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                          <button
+                            className="sort-button"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            <ArrowUpDown size={13} />
+                          </button>
+                        ) : (
+                          flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )
                         )}
-                        <ArrowUpDown size={13} />
-                      </button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
+                      </TableHead>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} onClick={() => onRow?.(row.original)}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} onClick={() => onRow?.(row.original)}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+              </TableBody>
+            </Table>
+          </div>
+          {renderMobile && (
+            <div className="business-mobile">{data.map(renderMobile)}</div>
+          )}
+        </>
       )}
-      <div className="table-pagination">
-        <span>
-          {total
-            ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)}`
-            : "0"}{" "}
-          trên {total}
-        </span>
-        <div>
+      <TablePagination {...{ total, page, pageSize, onPage, onPageSize }} />
+    </div>
+  );
+}
+
+export function TablePagination({
+  total,
+  page,
+  pageSize,
+  onPage,
+  onPageSize,
+}: {
+  total: number;
+  page: number;
+  pageSize: number;
+  onPage: (page: number) => void;
+  onPageSize?: (size: number) => void;
+}) {
+  return (
+    <div className="table-pagination">
+      <span>
+        {total
+          ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)}`
+          : "0"}{" "}
+        trên {total}
+      </span>
+      <div>
+        {onPageSize && (
           <label className="page-size">
             <span>Mỗi trang</span>
             <select
@@ -192,28 +242,28 @@ export function DataTable<T>({
               ))}
             </select>
           </label>
-          <Button
-            size="icon"
-            variant="outline"
-            aria-label="Trang trước"
-            disabled={page <= 1}
-            onClick={() => onPage(page - 1)}
-          >
-            <ChevronLeft />
-          </Button>
-          <span>
-            {page} / {Math.max(1, Math.ceil(total / pageSize))}
-          </span>
-          <Button
-            size="icon"
-            variant="outline"
-            aria-label="Trang sau"
-            disabled={page * pageSize >= total}
-            onClick={() => onPage(page + 1)}
-          >
-            <ChevronRight />
-          </Button>
-        </div>
+        )}
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label="Trang trước"
+          disabled={page <= 1}
+          onClick={() => onPage(page - 1)}
+        >
+          <ChevronLeft />
+        </Button>
+        <span>
+          {page} / {Math.max(1, Math.ceil(total / pageSize))}
+        </span>
+        <Button
+          size="icon"
+          variant="outline"
+          aria-label="Trang sau"
+          disabled={page * pageSize >= total}
+          onClick={() => onPage(page + 1)}
+        >
+          <ChevronRight />
+        </Button>
       </div>
     </div>
   );

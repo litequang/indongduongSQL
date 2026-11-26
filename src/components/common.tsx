@@ -29,14 +29,12 @@ import { cn } from "../lib/utils";
 import { api } from "../services/api";
 export function scrollToSection(event: React.MouseEvent<HTMLAnchorElement>) {
   event.preventDefault();
-  document
-    .getElementById(event.currentTarget.hash.slice(1))
-    ?.scrollIntoView({
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-      block: "start",
-    });
+  document.getElementById(event.currentTarget.hash.slice(1))?.scrollIntoView({
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth",
+    block: "start",
+  });
 }
 export function PageHeader({
   eyebrow,
@@ -199,6 +197,7 @@ export function ConfirmDialog({
   description,
   onConfirm,
   busy = false,
+  error,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
@@ -206,6 +205,7 @@ export function ConfirmDialog({
   description: string;
   onConfirm: () => void;
   busy?: boolean;
+  error?: string;
 }) {
   return (
     <ResponsiveDialog
@@ -214,6 +214,7 @@ export function ConfirmDialog({
       title={title}
       description={description}
     >
+      {error && <Message>{error}</Message>}
       <div className="dialog-actions">
         <Button variant="outline" onClick={() => onOpenChange(false)}>
           Quay lại
