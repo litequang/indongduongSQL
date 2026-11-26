@@ -35,6 +35,7 @@ $env:ALLOW_TEST_DATABASE='1'
 npm run test:integration
 npm run build
 npm run check:runtime
+npm run test:restart
 npx playwright install chromium
 npm run test:e2e
 ```

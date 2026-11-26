@@ -2,9 +2,9 @@
 
 Agent: PC. Updated 2026-11-26. Branch: codex/sql-foundation. Source provenance: SOURCE_PROVENANCE.md. Latest immutable code checkpoint is recorded in HANDOFF.md by the following documentation commit.
 
-Phase 00 completed: safe independent snapshot, architecture/Firebase/workflow/permission/UI/storage audit and roadmap. Phase 01 SQL + UI Foundation implemented and local acceptance verified. Final push/remote CI verification is in progress; this is not a merged main release. Phase 02 has not started.
+Phase 00 completed: safe independent snapshot, architecture/Firebase/workflow/permission/UI/storage audit and roadmap. Phase 01 SQL + UI Foundation implemented and local acceptance verified. Code is pushed; follow-up remote CI verification is in progress; this is not a merged main release. Phase 02 has not started.
 
-Implemented: real Express/MariaDB, ordered checksummed concurrent-safe migrations, one-time secret setup, scrypt passwords, DB cookie sessions + Origin/CSRF/rate limiting, eight-role backend authority, staff lifecycle/profile/password, normalized settings, administrative audit, bounded commit-ordered invalidation feed/optimistic versions, shadcn/Radix responsive light/dark UI, isolated legacy reference, Windows/Cloud scripts and MariaDB CI workflow.
+Implemented: real Express/MariaDB, ordered checksummed concurrent-safe migrations, one-time secret setup, scrypt passwords, DB cookie sessions + Origin/CSRF/rate limiting, eight-role backend authority, staff lifecycle/profile/password, normalized settings, administrative audit, bounded commit-ordered invalidation feed/optimistic versions, shadcn/Radix responsive light/dark UI, isolated legacy reference, Windows/Cloud scripts, real compiled-process restart smoke and MariaDB CI workflow.
 
 Pending features are explicit unavailable UI: customers/import, sales/design, production/plates/printing, finishing, inventory/dispatch/shipping, notifications, reporting, private R2 uploads/backups. Full source parity is not claimed. FEATURE_PARITY_MATRIX.md owns detailed coverage.
 

@@ -11,7 +11,7 @@ Date 2026-11-26, agent PC. Windows PowerShell 5.1, Git 2.55.0.windows.3, Node 22
 | Unit security/config/policy tests | 4 PASS, 0 FAIL | 0 |
 | Valuable preserved local workflow suites | 5 PASS, 0 FAIL | 0 |
 | Real MariaDB + real HTTP integration | 13 PASS, 0 FAIL (12 acceptance groups plus parent) | 0 |
-| Vite + bundled Express build | PASS; 744.52 KiB PWA precache, no Firebase chunk | 0 |
+| Vite + bundled Express build | PASS; 744.54 KiB PWA precache, no Firebase chunk | 0 |
 | SQL runtime/PWA exclusion check | PASS; backend artifact separated from static dist | 0 |
 | Browser acceptance + 12 responsive combinations | 4 suites PASS; 90 PNGs; WCAG axe checks; detailed UI_RESPONSIVE_TEST_REPORT | 0 |
 | npm audit / audit --omit=dev | 0 vulnerabilities after compatible dependency updates/overrides | 0 |
@@ -30,3 +30,7 @@ Remaining limits: account-specific Hawk Host Node/DB/proxy/limits and physical b
 Compiled startup smoke (`NODE_ENV=test`, `node app.cjs`, separate port): health/ready 200; private users 401; setup remains uninitialized in dev; backend /server.cjs and /build/server.cjs 404; extensionless SPA path 200. No TLS/hosting claim is inferred from this local static-build check. Backend artifact is build/server.cjs, frontend is dist/.
 
 Nonblocking tooling note: npm reports ESLint 9 as deprecated; lint itself passes and npm audit reports zero advisories. The obsolete isolated source permission assertion is documented in BASELINE_TEST_REPORT, not silently included as SQL success.
+
+Additional process evidence: `npm run test:restart` PASS (exit 0) against the allowlisted real test DB. The compiled app.cjs runs in Node process A, logs in a synthetic probe user, exits, then Node process B resolves the same cookie/user from MariaDB. Its temporary user/session/audit fixtures are removed afterward. The test chooses an ephemeral loopback port, never a production service. CI now includes this check after build.
+
+Remote CI first run 45782024438: npm ci, typecheck, lint, unit, preserved tests, MariaDB integration, build/runtime check PASS; the final Linux dark-surface contrast scan failed. The card foreground is now explicit and automated contrast sampling uses whole visible surfaces; the separate responsive geometry matrix is unchanged. A follow-up run is required before remote CI is reported green.
