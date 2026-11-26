@@ -36,3 +36,8 @@ split_context.js
 !src/data/
 
 patch2.cjs
+
+.local/
+*.private
+.env.ci
+artifacts/
