@@ -360,6 +360,8 @@ test.describe.serial("real SQL UI and responsive acceptance", () => {
     browser,
   }) => {
     test.setTimeout(120000);
+    // Keep whole surfaces visible for the contrast sampler; viewport geometry is tested separately.
+    await page.setViewportSize({ width: 1366, height: 2400 });
     await login(page, next);
     for (const theme of ["light", "dark"]) {
       await page.evaluate(

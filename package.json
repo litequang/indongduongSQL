@@ -22,7 +22,8 @@
     "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
     "test:e2e": "playwright test",
     "test:legacy": "tsx --test legacy/firebase/tests/auth-initialization-state.test.ts legacy/firebase/tests/developer-demo-preview.test.ts legacy/firebase/tests/production-eligibility.test.ts legacy/firebase/tests/submission-lock.test.ts legacy/firebase/tests/workflow-v2-local.test.ts",
-    "check:runtime": "node scripts/check-runtime.mjs"
+    "check:runtime": "node scripts/check-runtime.mjs",
+    "test:restart": "tsx scripts/smoke-restart.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.0",

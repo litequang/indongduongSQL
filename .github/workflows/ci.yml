@@ -2,6 +2,7 @@ name: SQL foundation CI
 on:
   push:
     branches: [main, codex/sql-foundation, 'task/**', 'codex/**']
+    paths-ignore: ['docs/**', 'README.md', 'THIRD_PARTY_NOTICES.md']
   pull_request:
 permissions:
   contents: read
@@ -50,6 +51,7 @@ jobs:
       - run: npm run test:integration
       - run: npm run build
       - run: npm run check:runtime
+      - run: npm run test:restart
       - run: npx playwright install --with-deps chromium
       # Dedicated test fixtures are reset only inside the guarded _test database.
       - run: npm run test:e2e

@@ -217,6 +217,7 @@ a[data-slot="button"][data-variant="destructive"] {
 }
 .surface {
   background: var(--card);
+  color: var(--foreground);
   border: 1px solid var(--border);
   border-radius: 10px;
   min-width: 0;
