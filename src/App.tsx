@@ -24,6 +24,10 @@ import { Customers } from "./components/business/Customers";
 import { Sales } from "./components/business/Sales";
 import { Designs } from "./components/business/Designs";
 import { idSchema } from "../shared/business";
+import type { ProductionInput } from "../shared/production";
+import { Production } from "./components/production/Production";
+import { DesignerQueue } from "./components/production/DesignerQueue";
+import { seedFromQueue } from "./components/production/QuickComposer";
 export default function App() {
   const auth = useAuth();
   const setup = useQuery({
@@ -63,6 +67,7 @@ export default function App() {
   );
 }
 function Workspace() {
+  const [productionSeed, setProductionSeed] = useState<ProductionInput>();
   const [route, setRoute] = useState(() => location.hash.slice(1) || "home");
   const [page, selection] = route.split("/");
   const { user } = useAuth();
@@ -106,6 +111,23 @@ function Workspace() {
         />
       ) : page === "design" && showBusiness ? (
         <Designs />
+      ) : page === "design-queue" && showBusiness ? (
+        <DesignerQueue
+          onCompose={(items) => {
+            setProductionSeed(seedFromQueue(items));
+            location.hash = "production/new";
+          }}
+        />
+      ) : (page === "production" || page === "plates") && showBusiness ? (
+        <Production
+          plates={page === "plates"}
+          seed={productionSeed}
+          selection={
+            selection === "new" || idSchema.safeParse(selection).success
+              ? selection
+              : undefined
+          }
+        />
       ) : (
         <UnavailableModule id={page} />
       )}

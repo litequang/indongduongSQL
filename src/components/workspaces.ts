@@ -43,7 +43,14 @@ export const MODULES: WorkspaceModule[] = [
     description:
       "Lệnh in, hướng dẫn kỹ thuật, phân công và theo dõi từng lượt in.",
     stage: "02B",
-    roles: [...management, "DESIGNER", "PRINTER"],
+    roles: [
+      ...management,
+      "DESIGNER",
+      "SALE",
+      "PRINTER",
+      "FINISHER",
+      "WAREHOUSE",
+    ],
   },
   {
     id: "plates",
@@ -136,4 +143,11 @@ export const WORKSPACE: Record<
 };
 
 export const isBusinessAvailable = (id: string) =>
-  ["customers", "sales", "design"].includes(id);
+  [
+    "customers",
+    "sales",
+    "design",
+    "design-queue",
+    "production",
+    "plates",
+  ].includes(id);

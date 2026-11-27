@@ -1,4 +1,224 @@
 @import "tailwindcss" source(none);
+.form-stack {
+  display: grid;
+  gap: 14px;
+}
+.table-link {
+  font-weight: 600;
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.production-panel .business-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 8px 0;
+}
+[data-slot="button"].printer-touch {
+  min-height: 48px;
+}
+
+.production-form,
+.production-panel {
+  padding: 20px;
+  margin-bottom: 16px;
+  min-width: 0;
+}
+.production-form fieldset {
+  min-width: 0;
+}
+.production-form textarea,
+.production-panel textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.production-form h2,
+.production-panel h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.production-panel h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 10px 0;
+}
+.production-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.production-item legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+.production-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.production-hint {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.production-instruction {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  line-height: 1.7;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+.production-allocation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 140px) auto;
+  gap: 8px;
+  align-items: center;
+}
+.production-allocation > span {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.production-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.production-line {
+  border-top: 1px solid var(--border);
+  padding: 12px 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.production-line p {
+  margin-top: 4px;
+}
+.production-line small {
+  color: var(--muted-foreground);
+}
+.production-timeline {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.production-timeline li {
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+}
+.production-timeline span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.production-inner {
+  padding-top: 12px;
+}
+.production-panel details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px 0;
+}
+.production-panel select[multiple] {
+  min-height: 100px;
+}
+.production-cancellation {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.production-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.production-stats button {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 14px;
+  color: var(--foreground);
+}
+.production-stats strong {
+  display: block;
+  font-size: 24px;
+}
+.production-stats span {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.production-mobile-row {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.production-mobile-row p {
+  margin: 7px 0;
+  color: var(--muted-foreground);
+}
+.printer-touch {
+  min-height: 48px;
+  font-size: 16px;
+  flex: 1;
+}
+.production-machine-filter {
+  border: 1px solid var(--border);
+  background: var(--background);
+  border-radius: 6px;
+  padding: 8px;
+  min-width: 0;
+  width: 180px;
+  color: var(--foreground);
+}
+@media (max-width: 1100px) {
+  .production-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .production-panel,
+  .production-form {
+    padding: 14px;
+  }
+  .production-stats {
+    gap: 6px;
+  }
+  .production-stats button {
+    padding: 10px;
+  }
+  .production-stats span {
+    font-size: 11px;
+  }
+  .production-allocation {
+    grid-template-columns: minmax(0, 1fr) 90px;
+  }
+  .production-allocation > button {
+    grid-column: 1/-1;
+  }
+  .production-actions > button {
+    flex: 1;
+    min-height: 44px;
+  }
+  .production-form input,
+  .production-form textarea,
+  .production-panel input,
+  .production-panel textarea {
+    font-size: 16px;
+  }
+  .production-machine-filter {
+    width: 100%;
+  }
+}
 @source "./";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
