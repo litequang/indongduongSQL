@@ -121,7 +121,10 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
             migrate(pool, config.DB_NAME),
             migrate(pool, config.DB_NAME),
           ]);
-          assert.deepEqual(applied.flat(), ["006_fulfillment.sql"]);
+          assert.deepEqual(applied.flat(), [
+            "006_fulfillment.sql",
+            "007_private_operations.sql",
+          ]);
           const [source] = await rows(
             pool,
             "SELECT * FROM production_finishing_handoffs WHERE id=?",

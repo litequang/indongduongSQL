@@ -2,6 +2,8 @@
 
 Audited 2026-11-26. Only free, commercially permitted source/dependencies are used. No paid template is imported. Preserve the linked original copyright/license text when redistributing. The application itself is user-owned; this file does not relicense the source repository.
 
+Phase 03 additions audited 2026-11-27: [AWS SDK JS v3](https://github.com/aws/aws-sdk-js-v3), locked client-s3 3.1178.0, Apache-2.0; [sharp](https://github.com/lovell/sharp) 0.35.5, Apache-2.0. sharp's prebuilt Windows native dependency notices and exact codec versions are retained in [native notices](docs/licenses/sharp-win32-x64-dependencies.md) and [versions](docs/licenses/sharp-win32-x64-versions.json), including libvips 8.18.7 LGPLv3 and the listed free codec licenses. Hosting redistribution must retain the notices shipped for its installed Linux platform too. No binary or user image is copied into Git.
+
 | Source | Audited commit | License | Use |
 |---|---|---|---|
 | [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) | `a156d9b90519348c4d71f0f0e6fcea179c49a43f` | [MIT](docs/licenses/satnaing-shadcn-admin.txt) | App-shell/grouped-navigation reference only; no template wholesale copy |
@@ -18,6 +20,7 @@ Audited 2026-11-26. Only free, commercially permitted source/dependencies are us
 | Package | Version | License |
 |---|---|---|
 | @axe-core/playwright | 4.14.1 | MPL-2.0 |
+| @aws-sdk/client-s3 | 3.1178.0 | [Apache-2.0](docs/licenses/aws-sdk-client-s3-package.txt) |
 | @eslint/js | 9.39.5 | MIT |
 | @playwright/test | 1.62.1 | Apache-2.0 |
 | @tailwindcss/vite | 4.3.3 | MIT |
@@ -48,6 +51,7 @@ Audited 2026-11-26. Only free, commercially permitted source/dependencies are us
 | read-excel-file | 9.3.20 | [MIT](docs/licenses/read-excel-file-package.txt) |
 | recharts | 3.11.1 | MIT |
 | tailwind-merge | 3.7.1 | MIT |
+| sharp | 0.35.5 | [Apache-2.0](docs/licenses/sharp-package.txt) |
 | tailwindcss | 4.3.3 | MIT |
 | tsx | 4.23.12 | MIT |
 | typescript | 5.8.3 | Apache-2.0 |

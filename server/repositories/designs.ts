@@ -21,6 +21,7 @@ import {
   searchPattern,
 } from "./business";
 import { getActiveCustomer } from "./customers";
+import { validateImageLink } from "../storage/registry";
 
 export const designQuery = z
   .object({
@@ -67,6 +68,7 @@ async function versionsWithTags(
     note: r.note,
     tags: tags.get(r.id) ?? [],
     image: r.image_registry_id ? { registryId: r.image_registry_id } : null,
+    imageRegistryId: r.image_registry_id,
   }));
 }
 async function designsWithTags(
@@ -180,6 +182,7 @@ export async function saveDesign(
       : (await getActiveCustomer(db, input.customerId)).name
     : input.customerName;
   const version = (current?.version ?? 0) + 1;
+  await validateImageLink(db, input.imageRegistryId, "DESIGN", id, actor);
   if (current)
     await db.execute(
       "UPDATE saved_designs SET customer_id=?,version=?,updated_at=CURRENT_TIMESTAMP(3) WHERE id=?",
@@ -193,7 +196,7 @@ export async function saveDesign(
   const versionId = randomUUID();
   await db.execute(
     `INSERT INTO design_versions(id,design_id,version,created_by,customer_id,customer_name,product_name,bag_size,
-    paper_type,paper_gsm,color,plate_reference,note) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    paper_type,paper_gsm,color,plate_reference,note,image_registry_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       versionId,
       id,
@@ -208,6 +211,7 @@ export async function saveDesign(
       input.color,
       input.plateReference,
       input.note,
+      input.imageRegistryId ?? null,
     ],
   );
   // Deduplicate case/accent equivalents using the same collation as the indexed tags.

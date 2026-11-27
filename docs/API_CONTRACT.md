@@ -1,4 +1,26 @@
-# REST API contract — Foundation and Phase 02A–C
+# REST API contract — Foundation through Phase 03
+
+## Phase 03 private operations
+
+All paths below use `/api`, current sessions, no-store, and Origin/CSRF on mutations. See [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md) for lifecycle, limits and local/live evidence boundaries.
+
+| Endpoint | Contract / authority |
+|---|---|
+| GET /storage/status | Any active account; only `{enabled,backupEnabled}`, never credentials/bucket URLs |
+| POST /images | `{id,targetType:DESIGN/PRODUCTION,targetId}`; design writer or creator production draft writer; owner ticket, 5 min, stable-ID retry |
+| PUT /images/:id/content | Binary JPEG/PNG/WebP, 5 MiB; auth/Origin/CSRF before parsing, owner+target check, full decode <=16M pixels, conditional immutable write and verified SQL activation; 2 concurrent uploads/process |
+| GET /images/:id/content | Authorized current reference, SHA-256 and session/target recheck after I/O; no-store bytes, no bearer URL |
+| DELETE /images/:id | Owner, writable target, no historical references; tombstone then delete |
+| GET /storage/jobs | Developer; last 30 jobs, totals/OK/FAILED and lastImageId |
+| GET /storage/jobs/:id | Developer; per-image result/message/attempts, optional afterId, <=100 rows + hasMore |
+| POST /storage/jobs | Developer; `{id,mode:BACKUP/VERIFY/RESTORE,afterId?}`; snapshot <=500 active IDs with next-group continuation |
+| POST /storage/jobs/:id/run | Developer; `{retryFailed?:boolean}`; one image, durable outcome; no automatic overwrite |
+| GET /storage/coverage | Developer; active total and historical verified backup count; VERIFY checks current bytes |
+| POST /storage/cleanup | Developer; `{}`; <=10 unreferenced old/deleted objects; keeps referenced history |
+| GET /notifications | Current recipient only; optional decimal string `before`, <=30 rows + hasMore; former-printer scope checked again |
+| POST /notifications/:id/read | `{}`; idempotent mark only current recipient, private notifications invalidation |
+
+Design input adds optional nullable `imageRegistryId`; each immutable version returns its registry reference. Production print-image input/output adds optional nullable `imageRegistryId`; linking checks ACTIVE registry, fixed target and unattached ownership. Official revisions cannot replace images. `notifications` change events are emitted only to the matching recipient's feed; cursor advances over hidden events. Image staging/activation audit does not broadcast unlinked registry IDs.
 
 The API uses the SQL Foundation session, Origin and CSRF controls.
 
@@ -48,7 +70,7 @@ States implemented: DRAFT → WAITING_ACCEPTANCE → ACCEPTED → optional WAITI
 
 Completion returns `PENDING_02C` handoffs, never stock or a completed finishing task. A no-finishing product still needs the explicit Phase 02C no-work checkpoint. Print-image metadata has no upload bytes/URLs and registry IDs remain unavailable until Phase 03.
 
-Same-origin `/api`, JSON only, UTF-8. Every response is `Cache-Control: no-store, private`. No CORS credentials. Error body: `{ "error": { "code": "VERSION_CONFLICT", "message": "..." } }`; validation adds field paths/messages. 400 invalid input, 401 unauthenticated, 403 authority/Origin/CSRF failure, 404 absent endpoint/entity, 409 duplicate/stale version/bootstrap completed, 413 body >64 KiB, 415 non-JSON mutation, 429 rate limit, 503 bounded password worker overload/readiness. No stack, SQL, hash or secret is returned.
+Same-origin `/api`, JSON UTF-8 except the authenticated image content PUT below. Every response is `Cache-Control: no-store, private`. No CORS credentials. Error body: `{ "error": { "code": "VERSION_CONFLICT", "message": "..." } }`; validation adds field paths/messages. 400 invalid input, 401 unauthenticated, 403 authority/Origin/CSRF failure, 404 absent endpoint/entity, 409 duplicate/stale version/bootstrap completed, 413 oversized body, 415 unsupported content type, 429 rate limit, 503 bounded processing overload/readiness/storage unavailable. No stack, SQL, hash or secret is returned.
 
 All POST/PATCH require exact configured `Origin`. Authenticated mutations additionally require `X-CSRF-Token` from login or `/auth/me`. Cookie is HttpOnly, SameSite=Lax, Path=/, Secure and `__Host-idd_session` name in production; dev/test uses `idd_session`. Auth tokens never appear in response JSON or browser storage. Absolute session lifetime defaults to 12 hours. CSRF value is memory-only in frontend.
 

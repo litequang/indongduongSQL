@@ -2,7 +2,7 @@
 
 Không gian quản lý xưởng in độc lập: **React + TypeScript + Vite/PWA, Express, MariaDB**. Design System shadcn/ui + Radix, Tailwind v4, TanStack Query/Table, Lucide. Mục tiêu Hawk Host/cPanel/Passenger; chưa triển khai hosting trong Phase 01.
 
-Đã triển khai nền tảng: thiết lập Developer một lần bằng khóa riêng, đăng nhập/session, tám vai trò, nhân viên, hồ sơ/mật khẩu, cấu hình công ty/danh mục, nhật ký quản trị, đồng bộ thay đổi và UI desktop/tablet/mobile sáng/tối. Các phân hệ khách hàng, đơn hàng, thiết kế, sản xuất, gia công, kho/giao hàng, thông báo, R2 và báo cáo **chưa khả dụng**. Không có dữ liệu nghiệp vụ mẫu hoặc thao tác thành công giả.
+Đã triển khai nền tảng SQL và các phân hệ khách hàng/import, đơn bán, thư viện mẫu, sản xuất/kẽm, gia công/nghiệm thu, kho/xuất nguyên đơn và giao hàng. Phase 03 bổ sung ảnh riêng tư qua registry/R2, nháp ảnh thiết bị, thông báo và backup/verify/khôi phục ảnh thiếu. Chưa cấu hình R2 dev thật: upload/backup của ứng dụng dev báo chưa khả dụng; kiểm thử dùng tệp tổng hợp và kho thử riêng. Báo cáo nâng cao và các quyết định nghiệp vụ còn mở xem [PROJECT_STATUS](docs/PROJECT_STATUS.md). Không có thao tác thành công giả.
 
 Không cần Firebase Console. Không chuyển dữ liệu/tài khoản/mật khẩu Firebase cũ. Mã tham khảo đã được cô lập trong `legacy/firebase`, không chạy trong bản SQL.
 
@@ -35,6 +35,8 @@ npm run test:e2e
 
 Test DB/account phải khác DB ứng dụng và tên bắt đầu indongduong_sql_test. Harness chỉ reset dữ liệu tổng hợp khi opt-in; không DROP/TRUNCATE. Không chạy integration/E2E đồng thời trên cùng test DB. CI dùng MariaDB service riêng, không kết nối production. Ảnh/trace ở `.local/screenshots`, test-results, playwright-report (không commit). Kết quả thực tế: [TEST_REPORT](docs/TEST_REPORT.md).
 
+`test:restart` tự chuẩn bị lại fixture 02C trong DB test trước khi so sánh hai tiến trình Node; không phụ thuộc suite cuối cùng để lại dữ liệu gì. Hướng dẫn cấu hình bucket dev riêng, nháp thiết bị và backup ảnh: [PRIVATE_OPERATIONS](docs/PRIVATE_OPERATIONS.md). Backup ảnh không thay thế backup MariaDB của vận hành hosting.
+
 ## Tài liệu và phối hợp PC/Cloud
 
 - [AGENTS](AGENTS.md): quy tắc bắt buộc; [APP_MAP](docs/APP_MAP.md): chủ sở hữu module.
@@ -44,4 +46,4 @@ Test DB/account phải khác DB ứng dụng và tên bắt đầu indongduong_s
 - [UI architecture](docs/UI_UX_ARCHITECTURE.md), [Design System](docs/DESIGN_SYSTEM.md), [Role workspaces](docs/ROLE_WORKSPACES.md), [components](docs/UI_COMPONENT_INVENTORY.md).
 - [Hawk Host preparation](docs/HAWKHOST_DEPLOYMENT.md), [third-party notices](THIRD_PARTY_NOTICES.md), [source provenance](docs/SOURCE_PROVENANCE.md).
 
-GitHub là nguồn chính thức. Một writer mỗi branch; PC/Cloud song song dùng branch riêng. Không force push, không tự merge main, không thay đổi repo Firebase gốc/Thờ Phượng Pro. Branch triển khai hiện tại `codex/sql-foundation`; main hiện chỉ là baseline nguồn đã làm sạch, chưa phải bản SQL ổn định được duyệt. Không bắt đầu Phase 02 khi chưa có yêu cầu mới.
+GitHub là nguồn chính thức. Một writer mỗi branch; PC/Cloud song song dùng branch riêng. Không force push, không tự merge main/PR, không thay đổi repo Firebase gốc/Thờ Phượng Pro. Branch PC hiện tại `codex/phase-03-private-operations` dựa trên bàn giao Cloud 02C `5d5af17`; main chưa được merge SQL. Phase 04 và deployment cần nhiệm vụ mới. Nghiệm thu R2 dev thật, thiết bị vật lý và Hawk Host còn LOCAL_VALIDATION_REQUIRED.

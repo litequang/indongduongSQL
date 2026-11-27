@@ -1,5 +1,7 @@
 # Bàn giao Phase 03
 
+> Historical incoming handoff from Cloud 02C. PC has since implemented local Phase 03. Read current [HANDOFF.md](HANDOFF.md), [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md) and [PHASE_04_HANDOFF.md](PHASE_04_HANDOFF.md) for current evidence, pending live R2 acceptance and future scope.
+
 Cloud, 27/11/2026. Nhánh Phase 02C là `codex/phase-02c-fulfillment`. Checkpoint và kết quả xác minh nằm trong [HANDOFF.md](HANDOFF.md) và [PHASE_02C_TEST_REPORT.md](PHASE_02C_TEST_REPORT.md).
 
 ## Nền tảng tiếp nhận

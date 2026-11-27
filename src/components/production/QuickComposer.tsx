@@ -16,6 +16,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { FormField, Message, PageHeader } from "../common";
 import { endpoint, write } from "../business/common";
+import { ImageAttachment } from "../private/ImageAttachment";
 
 export function seedFromQueue(items: DesignerItem[]): ProductionInput {
   return productionFields.parse({
@@ -81,6 +82,7 @@ export function seedFromRun(
     printImages: input.printImages.map((i) => ({
       ...i,
       id: crypto.randomUUID(),
+      imageRegistryId: null,
     })),
   };
 }
@@ -153,6 +155,10 @@ export function QuickComposer({
       try {
         const candidate = productionFields.parse({
           ...input,
+          printImages: input.printImages.map((image) => ({
+            ...image,
+            imageRegistryId: image.imageRegistryId ?? null,
+          })),
           tags: tagsText
             .split(",")
             .map((s) => s.trim())
@@ -748,6 +754,21 @@ export function QuickComposer({
               >
                 Bỏ bình bài
               </Button>
+              <ImageAttachment
+                targetType="PRODUCTION"
+                targetId={id}
+                slot={i.id}
+                value={i.imageRegistryId}
+                onChange={(imageRegistryId) => {
+                  setNotice("");
+                  setInput((current) => ({
+                    ...current,
+                    printImages: current.printImages.map((v) =>
+                      v.id === i.id ? { ...v, imageRegistryId } : v,
+                    ),
+                  }));
+                }}
+              />
             </div>
           ))}
           <div>
@@ -771,8 +792,8 @@ export function QuickComposer({
             </Button>
           </div>
           <Message>
-            Đính kèm ảnh chưa khả dụng (Phase 03). Nội dung kỹ thuật và số tờ
-            vẫn được lưu trong nháp.
+            Ảnh chỉ gắn vào lệnh khi lưu nháp. Nháp ảnh thiết bị được xóa khi
+            đăng xuất.
           </Message>
           <div className="form-grid">
             <FormField id="prod-note" label="Ghi chú lệnh">

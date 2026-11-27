@@ -30,6 +30,7 @@ import { DesignerQueue } from "./components/production/DesignerQueue";
 import { seedFromQueue } from "./components/production/QuickComposer";
 import { Finishing } from "./components/fulfillment/Finishing";
 import { Logistics } from "./components/fulfillment/Logistics";
+import { Storage } from "./components/private/Storage";
 export default function App() {
   const auth = useAuth();
   const setup = useQuery({
@@ -101,6 +102,8 @@ function Workspace() {
         <SettingsModal />
       ) : page === "audit" ? (
         <AuditPage />
+      ) : page === "storage" ? (
+        <Storage />
       ) : page === "customers" && showBusiness ? (
         <Customers />
       ) : page === "sales" && showBusiness ? (

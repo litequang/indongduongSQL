@@ -23,9 +23,11 @@
     "test:e2e": "playwright test",
     "test:legacy": "tsx --test legacy/firebase/tests/auth-initialization-state.test.ts legacy/firebase/tests/developer-demo-preview.test.ts legacy/firebase/tests/production-eligibility.test.ts legacy/firebase/tests/submission-lock.test.ts legacy/firebase/tests/workflow-v2-local.test.ts",
     "check:runtime": "node scripts/check-runtime.mjs",
-    "test:restart": "tsx scripts/smoke-restart.ts"
+    "test:restart": "tsx --test tests/integration/phase-02c.test.ts && tsx scripts/smoke-restart.ts",
+    "test:r2-dev": "tsx scripts/smoke-r2-dev.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1178.0",
     "@tanstack/react-query": "^5.90.0",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
@@ -41,6 +43,7 @@
     "react-dom": "^19.2.0",
     "read-excel-file": "^9.3.20",
     "recharts": "^3.0.0",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.3.0",
     "zod": "^4.1.0"
   },

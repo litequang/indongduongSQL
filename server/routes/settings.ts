@@ -89,9 +89,11 @@ export function registerSettingsRoutes(
         changes: page
           .filter(
             (r) =>
-              r.entity !== "production_orders" ||
-              visibleIds.has(r.entity_id) ||
-              removedIds.has(r.entity_id),
+              (r.entity !== "notifications" ||
+                r.entity_id === session.user.id) &&
+              (r.entity !== "production_orders" ||
+                visibleIds.has(r.entity_id) ||
+                removedIds.has(r.entity_id)),
           )
           .map((r) => ({
             sequence: String(r.sequence),

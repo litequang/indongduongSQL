@@ -59,6 +59,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
             void client.invalidateQueries({ queryKey: ["session"] });
           }
           for (const entity of [
+            "notifications",
             "customers",
             "sales_orders",
             "saved_designs",

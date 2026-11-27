@@ -8,7 +8,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 - UI: Tailwind CSS v4, shadcn/ui with Radix primitives, Lucide, TanStack Query/Table. ReUI free compatible patterns selectively; Recharts for real reports. No paid components, Next.js or second primitive framework. Record exact sources/licenses in THIRD_PARTY_NOTICES.md.
 - SQL runtime must not import `legacy/firebase`, Firebase SDKs or the former JSON-store server. No Firebase data/account/password migration, dual database, Firestore adapter or production fallback to localStorage.
 - Preserve existing business rules and eight roles. Product quantity differs from sheets; sales products and print runs are M:N. Product finishing/no-work confirmation, warehouse sibling readiness, revision ACK and cancellation invariants are mandatory. No arbitrary Kanban state dragging.
-- Phase 00, Phase 01, UI Foundation and Phase 02A/B are inherited. The owner authorized Phase 02C on `codex/phase-02c-fulfillment`, based on `codex/phase-02b-production`. Phase 03 and deployment require separate authorization.
+- Phase 00, Phase 01, UI Foundation and Phase 02A/B/C are inherited. The owner authorized the next phase on 2026-11-27 after Cloud 02C, and explicitly selected local Phase 03 implementation/testing while dedicated R2 dev credentials are unavailable. PC owns `codex/phase-03-private-operations` based on `5d5af17`. Stop after Phase 03 implementation/handoff; Phase 04 and deployment require another task. Live R2 acceptance remains LOCAL_VALIDATION_REQUIRED.
 
 ## Security
 
@@ -22,7 +22,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 
 1. Before a new task: `git fetch origin`, `git status --short`, inspect branch/upstream/history. Preserve uncommitted changes; never reset/overwrite another agent's work.
 2. One writer per branch. PC and Cloud working concurrently use distinct task branches/worktrees and coordinate ownership in HANDOFF.md. Never assume another environment shares local DB/state.
-3. `main` is the stable tested release target. The initial source snapshot records provenance. Cloud Phase 02C uses `codex/phase-02c-fulfillment`, based on production handoff `54e1450`. Never force-push or auto-merge untested code. Merging main or PR #1 needs user review.
+3. `main` is the stable tested release target. The initial source snapshot records provenance. PC Phase 03 uses `codex/phase-03-private-operations`, based on Cloud 02C handoff `5d5af17`. Never force-push or auto-merge untested code. Merging main or PRs needs user review.
 4. Never edit/push/deploy `litequang/indongduong` or Thờ Phượng Pro. Check remotes/diff/secrets before every push. Meaningful checkpoints only, push the assigned target branch.
 5. Before handoff update PROJECT_STATUS, HANDOFF, FEATURE_PARITY_MATRIX and TEST_REPORT with actual state. Record PC/CLOUD, branch, immutable checkpoint SHA, phase, completed/in-progress/pending work, files, migrations, environment, test commands/results/exit codes, known errors/blockers and next commands. A documentation-only handoff commit references the preceding tested code SHA, avoiding a circular self-SHA.
 

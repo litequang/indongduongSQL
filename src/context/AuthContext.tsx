@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "../../shared/contracts";
 import { api, json, setCsrfToken, ApiError } from "../services/api";
+import { clearDeviceDrafts } from "../services/device-drafts";
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [client]);
   useEffect(() => {
     if (session.data === null) {
+      void clearDeviceDrafts().catch(() => {});
       for (const q of client.getQueryCache().getAll())
         if (q.queryKey[0] !== "session" && q.queryKey[0] !== "setup")
           client.removeQueries({ queryKey: q.queryKey, exact: true });
@@ -59,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const logout = async () => {
     await api("/auth/logout", { method: "POST", body: "{}" });
+    await clearDeviceDrafts().catch(() => {});
     setCsrfToken("");
     client.clear();
     client.setQueryData(["session"], null);

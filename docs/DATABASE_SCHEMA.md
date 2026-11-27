@@ -1,5 +1,11 @@
 # Database schema
 
+## Phase 03 — migration 007
+
+`007_private_operations.sql` follows unchanged 001–006. `image_registry` records owner, fixed DESIGN/PRODUCTION target, STAGED/ACTIVE/DELETED state, immutable private key, expiry, detected MIME/size/dimensions/SHA-256. It removes earlier inline NULL-only column checks using MODIFY COLUMN and adds registry FKs on design_versions/production_print_images. `image_backup_jobs` owns actor/mode/time; `image_backup_items` stores bounded ID snapshots, durable outcome/message/attempt count. `notifications` has per-user commit sequence uniqueness, entity reference, read timestamp and a bounded private-history index. Credentials and binary bytes never enter SQL.
+
+Unreferenced cleanup retains registry tombstones; successful cleanup marks the key retired, retaining history and backup results. Image backup records do not constitute a SQL database backup. [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md) owns lifecycle and restoration details.
+
 Target MariaDB 11.4 (local verified 11.4.9). InnoDB, utf8mb4_unicode_ci; UUID identities are ascii_bin; normalized lowercase ASCII usernames are unique case-insensitively. SQL timestamps and connection timezone are UTC, browser dates use Asia/Ho_Chi_Minh. Quantities for Phase 02 use unsigned integers when indivisible, otherwise DECIMAL(18,3); money uses DECIMAL(18,2), never FLOAT. Values larger than JS safe integers are strings at API boundaries.
 
 ## Implemented in Phase 01
@@ -47,7 +53,7 @@ erDiagram
 
 Customer contact details use first-class columns. Generated active keys enforce uniqueness on normalized nonempty phone and on nonempty `(external_source,external_id)`. Soft deletion releases active keys while retaining the customer row and linked sales. Customers can share a name. Transaction-serialized codes do not change when contact details change. Name, region, date, active identity, parent/status, priority, customer and version indexes cover point lookup and common filters/orderings. Text contains search escapes LIKE wildcards and may scan within filters.
 
-The version FK is the sales design snapshot. A new library version writes a new row with a new UUID. Order items keep their original UUID reference and still return its metadata and tags. An optional `design_versions.image_registry_id` reserves a neutral private registry reference. A 02A CHECK holds it at NULL until Phase 03 can validate the relationship and install the registry FK. Bytes, base64 and download links are absent from the image contract.
+The version FK is the sales design snapshot. A new library version writes a new row with a new UUID. Order items keep their original UUID reference and still return its metadata and tags. `design_versions.image_registry_id` references the private registry after 007 removes the earlier NULL-only inline CHECK. Registry relationship/status is checked by the backend before linking; bytes, base64 and bearer download URLs are absent from the design contract.
 
 ## Implemented in Phase 02B
 

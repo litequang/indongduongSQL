@@ -55,4 +55,18 @@ test("R2 config is optional, backend only and rejects partial or foreign endpoin
   assert.throws(() =>
     readR2Config({ R2_ENDPOINT: "https://attacker.example" }),
   );
+  const valid = {
+    R2_ENDPOINT: "https://abcdef123456.r2.cloudflarestorage.com",
+    R2_BUCKET: "isolated-dev-images",
+    R2_BACKUP_BUCKET: "isolated-dev-backups",
+    R2_ACCESS_KEY_ID: randomBytes(16).toString("hex"),
+    R2_SECRET_ACCESS_KEY: randomBytes(32).toString("hex"),
+    R2_ENVIRONMENT: "development",
+    NODE_ENV: "development",
+  };
+  assert.equal(readR2Config(valid)?.R2_BUCKET, valid.R2_BUCKET);
+  assert.throws(() => readR2Config({ ...valid, NODE_ENV: "production" }));
+  assert.throws(() =>
+    readR2Config({ ...valid, R2_BACKUP_BUCKET: valid.R2_BUCKET }),
+  );
 });

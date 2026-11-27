@@ -70,6 +70,7 @@ export const designFields = z
     plateReference: text(150).default(""),
     note: text(1000).default(""),
     tags: z.array(text(50).min(1)).max(12).default([]),
+    imageRegistryId: idSchema.nullable().optional(),
   })
   .strict();
 export type DesignInput = z.output<typeof designFields>;

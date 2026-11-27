@@ -1,5 +1,6 @@
 import { LABELS as FULFILLMENT_LABELS } from "../fulfillment/common";
 import { useRef, useState } from "react";
+import { PrivateImage } from "../private/ImageAttachment";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Page } from "../../../shared/contracts";
 import {
@@ -172,15 +173,15 @@ export function Production({
               <>
                 <h3>Bình bài kỹ thuật</h3>
                 {o.printImages.map((i) => (
-                  <p key={i.id}>
-                    {i.label} · {localNumber(i.sheetCount)} tờ · {i.note}
-                  </p>
+                  <div key={i.id}>
+                    <PrivateImage id={i.imageRegistryId} alt={i.label} />
+                    <p>
+                      {i.label} · {localNumber(i.sheetCount)} tờ · {i.note}
+                    </p>
+                  </div>
                 ))}
               </>
             )}
-            <p className="production-hint">
-              Đính kèm ảnh chưa khả dụng (Phase 03).
-            </p>
             {canComposeProduction(user!.role) && o.status !== "CANCELLED" && (
               <div className="production-actions">
                 <Button

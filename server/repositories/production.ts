@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { validateImageLink } from "../storage/registry";
 import { z } from "zod";
 import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
 import type { User } from "../../shared/contracts";
@@ -133,6 +134,7 @@ async function dto(db: Db, r: RowDataPacket): Promise<ProductionOrder> {
       label: i.label,
       note: i.note,
       sheetCount: i.sheet_count,
+      imageRegistryId: i.image_registry_id,
     })),
   };
 }
@@ -618,11 +620,21 @@ export async function saveProduction(
       );
     }
   }
-  for (const [position, i] of input.printImages.entries())
+  for (const [position, i] of input.printImages.entries()) {
+    await validateImageLink(db, i.imageRegistryId, "PRODUCTION", id, actor.id);
     await db.execute(
-      "INSERT INTO production_print_images(id,order_id,position,label,note,sheet_count) VALUES(?,?,?,?,?,?)",
-      [i.id, id, position, i.label, i.note, i.sheetCount],
+      "INSERT INTO production_print_images(id,order_id,position,label,note,sheet_count,image_registry_id) VALUES(?,?,?,?,?,?,?)",
+      [
+        i.id,
+        id,
+        position,
+        i.label,
+        i.note,
+        i.sheetCount,
+        i.imageRegistryId ?? null,
+      ],
     );
+  }
   for (const tag of new Set(input.tags))
     await db.execute("INSERT INTO production_tags(order_id,tag) VALUES(?,?)", [
       id,

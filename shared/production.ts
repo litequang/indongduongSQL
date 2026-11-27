@@ -106,6 +106,7 @@ export const productionFields = technicalFields
             label: text(150),
             note: text(500).default(""),
             sheetCount: quantity,
+            imageRegistryId: idSchema.nullable().optional(),
           })
           .strict(),
       )

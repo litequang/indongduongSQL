@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-11-27 — Phase 03 local authorization and private operations
+
+After Cloud 02C handoff `5d5af17`, the owner instructed PC to continue the next phase and push a handoff, then explicitly chose local implementation/testing with real R2 dev acceptance pending. PC uses `codex/phase-03-private-operations`; main/PRs are not merged. Phase 04 and deployment remain outside this task.
+
+Same-origin authenticated binary proxy with a five-minute owner ticket replaces the proposed browser presigned URL flow. This keeps current assignment/session checks on every download, hides storage credentials/URLs and avoids CORS. Full decoding/normalization with sharp and conditional S3 writes precede SQL activation. The fixed image registry target and immutable references prevent file UUID substitution. Official production images cannot be edited; new runs clear copied attachment IDs. No provider fallback is added.
+
+Only explicitly selected attachment File blobs may persist in account/target/slot-scoped IndexedDB; SQL metadata/API results/tokens remain memory-only. Logout/confirmed auth expiry purges device files. Acknowledged SQL drafts provide discoverable stable targets; unsaved new forms still require saving before a target can be reopened. This narrow Phase 03 exception supersedes the earlier absolute browser-memory wording for selected attachment drafts, without introducing offline business mutations.
+
+Notifications are transactional recipient rows, reauthorized against current production visibility, with private read-state invalidations and string BIGINT pagination. Fulfillment emits generic workspace alerts rather than leaking task IDs. Sound/voice are opt-in UI choices. Image backup jobs snapshot up to 500 IDs with continuation, run one image/request and verify full bytes before/after copying. Restore is missing-only; corrupt existing objects require a separate operator decision. Image jobs do not replace MariaDB backups. Automatic retention/push messaging/scheduled jobs are not silently introduced.
+
 ## 2026-11-27 — Phase 02C downstream transactions
 
 A FINISHER receives a valid print handoff once. The task UUID is the handoff UUID. Numeric late linking remains available until a standalone handoff is received. After receipt, the production transaction rejects supersession and preserves the task and any acceptance. Zero TRACE, RELEASED allocations and superseded rows cannot enter the finishing queue. A single task records either specialist completion or explicit no-work confirmation. Source cancellation can end the finishing task, with a recorded request/response; warehouse quantities still require a separate inspection.

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ImageAttachment, PrivateImage } from "../private/ImageAttachment";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Grid2X2, ImageOff, List, Plus } from "lucide-react";
 import {
@@ -181,8 +182,17 @@ export function Designs() {
                   onClick={() => setSelected(design.id)}
                 >
                   <div className="business-design-media">
-                    <ImageOff size={23} aria-hidden="true" />
-                    <span>Chưa có ảnh</span>
+                    {design.current.image ? (
+                      <PrivateImage
+                        id={design.current.image.registryId}
+                        alt={design.current.productName}
+                      />
+                    ) : (
+                      <>
+                        <ImageOff size={23} aria-hidden="true" />
+                        <span>Chưa có ảnh</span>
+                      </>
+                    )}
                   </div>
                   <div className="business-design-text">
                     <div>
@@ -273,9 +283,6 @@ function DesignDetails({
   });
   return (
     <div className="business-form">
-      <p className="business-image-note">
-        <ImageOff size={16} /> Tải ảnh thiết kế sẽ có ở Phase 03.
-      </p>
       <section className="business-subsection">
         <h3>Phiên bản hiện tại · {design.version}</h3>
         <VersionFields version={design.current} />
@@ -320,19 +327,22 @@ function DesignDetails({
 }
 function VersionFields({ version }: { version: DesignVersion }) {
   return (
-    <BusinessFields
-      items={[
-        { label: "Sản phẩm", value: version.productName },
-        { label: "Khách hàng", value: version.customerName },
-        { label: "Kích thước", value: version.bagSize },
-        { label: "Vật liệu / giấy", value: version.paperType },
-        { label: "Định lượng giấy", value: version.paperGsm },
-        { label: "Màu", value: version.color },
-        { label: "Mã kẽm", value: version.plateReference },
-        { label: "Nhãn", value: version.tags.join(", ") },
-        { label: "Ghi chú", value: version.note },
-      ]}
-    />
+    <>
+      <PrivateImage id={version.image?.registryId} alt={version.productName} />
+      <BusinessFields
+        items={[
+          { label: "Sản phẩm", value: version.productName },
+          { label: "Khách hàng", value: version.customerName },
+          { label: "Kích thước", value: version.bagSize },
+          { label: "Vật liệu / giấy", value: version.paperType },
+          { label: "Định lượng giấy", value: version.paperGsm },
+          { label: "Màu", value: version.color },
+          { label: "Mã kẽm", value: version.plateReference },
+          { label: "Nhãn", value: version.tags.join(", ") },
+          { label: "Ghi chú", value: version.note },
+        ]}
+      />
+    </>
   );
 }
 function DesignEditor({
@@ -357,6 +367,7 @@ function DesignEditor({
     plateReference: design?.current.plateReference ?? "",
     note: design?.current.note ?? "",
     tags: design?.current.tags ?? [],
+    imageRegistryId: design?.current.image?.registryId ?? null,
   }));
   const [tags, setTags] = useState(draft.tags.join(", "));
   const [error, setError] = useState("");
@@ -470,9 +481,15 @@ function DesignEditor({
             />
           </FormField>
         </div>
-        <p className="business-image-note">
-          <ImageOff size={16} /> Tải ảnh thiết kế sẽ có ở Phase 03.
-        </p>
+        <ImageAttachment
+          targetType="DESIGN"
+          targetId={id}
+          slot="design"
+          value={draft.imageRegistryId}
+          onChange={(imageRegistryId) =>
+            setDraft((current) => ({ ...current, imageRegistryId }))
+          }
+        />
         {(error || save.error) && (
           <Message>{error || save.error?.message}</Message>
         )}

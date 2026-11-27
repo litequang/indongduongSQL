@@ -182,9 +182,7 @@ test.describe.serial("Phase 02A real customer, sales and design", () => {
     await expect(
       dialog(page).getByText("Phiên bản hiện tại · 1"),
     ).toBeVisible();
-    await expect(
-      dialog(page).getByText("Tải ảnh thiết kế sẽ có ở Phase 03."),
-    ).toBeVisible();
+    await expect(dialog(page).locator("img.private-image")).toHaveCount(0);
     await page.goto("/#sales");
     await page.getByRole("button", { name: "Tạo đơn", exact: true }).click();
     const form = dialog(page);

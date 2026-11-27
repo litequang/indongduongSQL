@@ -153,4 +153,5 @@ export const isBusinessAvailable = (id: string) =>
     "finishing",
     "warehouse",
     "shipping",
+    "storage",
   ].includes(id);

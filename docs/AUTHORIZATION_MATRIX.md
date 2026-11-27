@@ -1,5 +1,11 @@
 # Authorization matrix
 
+## Phase 03
+
+Image bytes follow current read authority on their design/production relationship. Unattached images are owner only; production drafts remain creator only, PRINTER reads current assigned official runs only. Writes require a design writer or creator of a production draft, with ACTIVE fixed-target registry checks before linking. Official image mutation is rejected. Ownership alone does not bypass a changed target state. Deletion requires no historical reference. Developer alone creates/runs image backup/verify/restore/cleanup jobs and reads coverage. Storage status exposes booleans to active accounts.
+
+Notification list/read-state is recipient-only and current production visibility is checked after reassignment. Recipients are selected server-side, never from frontend claims. Fulfillment alerts contain a generic workspace ID only. Read invalidations are filtered by current user ID. Existing eight-role workflow authority remains unchanged.
+
 Trusted actor comes from a nonexpired MariaDB session joined to the current active user. No role/body/header or UI preview can change authority. A mutation rechecks the session and role while holding the global state lock; staff changes are effective on the next request. Sensitive changes delete all target sessions. Browser menus only present the same capabilities.
 
 | Action                                                               | Developer                    | Admin                | Manager        | Designer | Sale           | Printer | Finisher | Warehouse |

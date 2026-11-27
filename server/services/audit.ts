@@ -1,6 +1,7 @@
 import type { ChangeEntity } from "../../shared/contracts";
 import type { PoolConnection } from "mysql2/promise";
 import { rows } from "../database/pool";
+import { notifyChange } from "./notifications";
 export async function audit(
   db: PoolConnection,
   actorId: string | null,
@@ -32,4 +33,5 @@ export async function changed(
     "INSERT INTO change_events(sequence,entity,entity_id,record_version,deleted) VALUES(?,?,?,?,?)",
     [state.change_sequence, entity, entityId, version, deleted],
   );
+  await notifyChange(db, entity, entityId, String(state.change_sequence));
 }

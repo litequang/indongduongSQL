@@ -14,7 +14,24 @@ import { registerSettingsRoutes } from "./routes/settings";
 import { registerBusinessRoutes } from "./routes/business";
 import { registerProductionRoutes } from "./routes/production";
 import { registerFulfillmentRoutes } from "./routes/fulfillment";
-export async function createApp(pool: Pool, config: Config) {
+import {
+  registerImageUpload,
+  registerPrivateOperations,
+} from "./routes/private-operations";
+import { r2Store, type ObjectStore } from "./storage/objects";
+export async function createApp(
+  pool: Pool,
+  config: Config,
+  objects?: ObjectStore | null,
+) {
+  if (objects && config.NODE_ENV !== "test")
+    throw new Error("Storage injection is test-only");
+  const store =
+    objects === undefined
+      ? config.NODE_ENV === "test"
+        ? null
+        : r2Store()
+      : objects;
   const app = express();
   app.disable("x-powered-by");
   app.set("trust proxy", config.TRUST_PROXY_HOPS);
@@ -43,6 +60,7 @@ export async function createApp(pool: Pool, config: Config) {
     res.set("Pragma", "no-cache");
     next();
   });
+  registerImageUpload(app, pool, config, store);
   const standardJson = express.json({ limit: "64kb", strict: true });
   const businessJson = express.json({
     limit: "512kb",
@@ -84,6 +102,7 @@ export async function createApp(pool: Pool, config: Config) {
   registerBusinessRoutes(app, pool, config);
   registerProductionRoutes(app, pool, config);
   registerFulfillmentRoutes(app, pool, config);
+  registerPrivateOperations(app, pool, config, store);
   app.use("/api", (_req, res) =>
     res
       .status(404)

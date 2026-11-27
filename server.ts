@@ -1,5 +1,4 @@
-import express from "express";
-import path from "node:path";
+import { mountFrontend } from "./server/frontend";
 import { loadConfig } from "./server/config";
 import { createPool, assertDatabase } from "./server/database/pool";
 import { isReady } from "./server/database/migrate";
@@ -12,37 +11,7 @@ async function start() {
     if (!(await isReady(pool)))
       throw new Error("Schema is not ready. Run npm run db:migrate.");
     const app = await createApp(pool, config);
-    if (config.NODE_ENV === "development") {
-      const { createServer } = await import("vite");
-      const vite = await createServer({
-        server: { middlewareMode: true },
-        appType: "spa",
-      });
-      app.use(vite.middlewares);
-    } else {
-      const directory = path.resolve("dist");
-      app.use(
-        express.static(directory, {
-          index: false,
-          setHeaders: (res, file) => {
-            res.setHeader(
-              "Cache-Control",
-              file.includes(`${path.sep}assets${path.sep}`)
-                ? "public,max-age=31536000,immutable"
-                : "no-cache",
-            );
-          },
-        }),
-      );
-      app.get("*", (req, res) => {
-        if (path.extname(req.path)) {
-          res.status(404).end();
-          return;
-        }
-        res.set("Cache-Control", "no-store");
-        res.sendFile(path.join(directory, "index.html"));
-      });
-    }
+    await mountFrontend(app, config);
     const port = /^\d+$/.test(config.PORT) ? Number(config.PORT) : config.PORT;
     const server =
       typeof port === "number"

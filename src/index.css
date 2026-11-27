@@ -3231,3 +3231,40 @@ kbd {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+.private-image {
+  display: block;
+  max-width: 100%;
+  max-height: 26rem;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+.storage-image-id {
+  overflow-wrap: anywhere;
+}
+.storage-panel .dialog-actions,
+.image-attachment .dialog-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.storage-panel [data-slot="button"],
+.image-attachment [data-slot="button"] {
+  max-width: 100%;
+  height: auto;
+  min-height: 2.25rem;
+  white-space: normal;
+}
+.image-attachment p {
+  overflow-wrap: anywhere;
+}
+.image-attachment {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  grid-column: 1/-1;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.image-attachment input {
+  max-width: 100%;
+}

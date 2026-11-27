@@ -32,13 +32,9 @@ import { isBusinessAvailable, MODULES } from "./workspaces";
 import { Brand } from "./AuthLayout";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import {
-  ResponsiveDialog,
-  ConnectionStatus,
-  EmptyState,
-  Message,
-} from "./common";
+import { ResponsiveDialog, ConnectionStatus, Message } from "./common";
 import { cn } from "../lib/utils";
+import { NotificationCenter } from "./private/Notifications";
 export const PAGE_LABELS: Record<string, string> = {
   home: "Tổng quan",
   users: "Nhân viên",
@@ -178,9 +174,7 @@ export function AppShell({
       <NavLink id="users" page={page} />
       <NavLink id="settings" page={page} />
       {privileged && <NavLink id="audit" page={page} />}{" "}
-      {user!.role === "DEVELOPER" && (
-        <NavLink id="storage" page={page} pending />
-      )}
+      {user!.role === "DEVELOPER" && <NavLink id="storage" page={page} />}
     </>
   );
   return (
@@ -455,27 +449,6 @@ export function GlobalSearch({
         ))}
         {!matches.length && <p>Không tìm thấy màn hình phù hợp.</p>}
       </div>
-    </ResponsiveDialog>
-  );
-}
-export function NotificationCenter({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (value: boolean) => void;
-}) {
-  return (
-    <ResponsiveDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Thông báo"
-      description="Thông báo công việc sẽ được triển khai cùng các phân hệ nghiệp vụ."
-    >
-      <EmptyState
-        title="Thông báo chưa khả dụng"
-        description="Bạn có thể theo dõi các thao tác quản trị trong nhật ký hoạt động."
-      />
     </ResponsiveDialog>
   );
 }

@@ -55,13 +55,34 @@ const id = randomUUID();
 const username = `restart_${randomBytes(6).toString("hex")}`;
 const password = randomBytes(24).toString("base64url");
 await pool.execute(
-  "INSERT INTO users(id,username,name,role_code,password_hash) VALUES(?,?,?,'MANAGER',?)",
+  "INSERT INTO users(id,username,name,role_code,password_hash) VALUES(?,?,?,'DEVELOPER',?)",
   [
     id,
     username,
     "Synthetic process restart probe",
     await hashPassword(password),
   ],
+);
+// Guarded synthetic schema only. The compiled test runtime intentionally has no R2 adapter.
+// Persist registry/job/read state independently of the external bytes tested by Phase 03 HTTP.
+const imageProbe = randomUUID(),
+  jobProbe = randomUUID(),
+  notificationProbe = randomUUID();
+await pool.execute(
+  `INSERT INTO image_registry(id,owner_id,target_type,target_id,object_key,expires_at) VALUES(?,?,'DESIGN',?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 5 MINUTE))`,
+  [imageProbe, id, randomUUID(), "images/" + imageProbe],
+);
+await pool.execute(
+  "INSERT INTO image_backup_jobs(id,actor_id,mode) VALUES(?,?,'BACKUP')",
+  [jobProbe, id],
+);
+await pool.execute(
+  "INSERT INTO image_backup_items(job_id,image_id) VALUES(?,?)",
+  [jobProbe, imageProbe],
+);
+await pool.execute(
+  "INSERT INTO notifications(id,user_id,event_sequence,entity,entity_id,read_at) VALUES(?,?,0,'fulfillment','workspace',UTC_TIMESTAMP(3))",
+  [notificationProbe, id],
 );
 let child: ChildProcess | undefined;
 const origin = config.APP_ORIGIN;
@@ -156,6 +177,32 @@ try {
     );
   }
   const fulfillmentBefore = await fulfillmentSnapshot();
+  async function privateSnapshot() {
+    const jobs = await fetch(origin + "/api/storage/jobs", {
+      headers: { Cookie: cookie },
+    });
+    assert.equal(jobs.status, 200);
+    const notifications = await fetch(origin + "/api/notifications", {
+      headers: { Cookie: cookie },
+    });
+    assert.equal(notifications.status, 200);
+    const result = {
+      jobs: await jobs.json(),
+      notifications: await notifications.json(),
+      registry: await rows(pool, "SELECT * FROM image_registry WHERE id=?", [
+        imageProbe,
+      ]),
+    };
+    assert(result.jobs.items.some((j: { id: string }) => j.id === jobProbe));
+    assert(
+      result.notifications.items.some(
+        (n: { id: string; read: boolean }) =>
+          n.id === notificationProbe && n.read,
+      ),
+    );
+    return result;
+  }
+  const privateBefore = await privateSnapshot();
   await stop();
   await start();
   const me = await fetch(origin + "/api/auth/me", {
@@ -192,13 +239,20 @@ try {
   assert.equal(afterProduction.status, 200);
   assert.deepEqual(await afterProduction.json(), productionSnapshot);
   assert.deepEqual(await fulfillmentSnapshot(), fulfillmentBefore);
+  assert.deepEqual(await privateSnapshot(), privateBefore);
   assert.equal((await fetch(origin + "/server.cjs")).status, 404);
   assert.equal((await fetch(origin + "/build/server.cjs")).status, 404);
   console.log(
-    "PASS compiled Node process restart: session, customer, sales/design and production, accepted stock/movements, whole-order dispatch and shipment snapshots survive. Backend artifacts stay private.",
+    "PASS compiled Node process restart: session, customer, sales/design and production, accepted stock/movements, dispatch/shipment, image registry/job and read notification snapshots survive. Backend artifacts stay private.",
   );
 } finally {
   await stop();
+  await pool.execute("DELETE FROM image_backup_items WHERE job_id=?", [
+    jobProbe,
+  ]);
+  await pool.execute("DELETE FROM image_backup_jobs WHERE id=?", [jobProbe]);
+  await pool.execute("DELETE FROM image_registry WHERE id=?", [imageProbe]);
+  await pool.execute("DELETE FROM notifications WHERE user_id=?", [id]);
   await pool.execute("DELETE FROM sessions WHERE user_id=?", [id]);
   await pool.execute("DELETE FROM audit_logs WHERE actor_id=?", [id]);
   await pool.execute("DELETE FROM users WHERE id=?", [id]);
