@@ -290,7 +290,11 @@ export function ActivityTimeline({
   items: { id: string; title: string; description: string; time: string }[];
 }) {
   return (
-    <ol className="activity-timeline">
+    <ol
+      className="activity-timeline"
+      tabIndex={0}
+      aria-label="Lịch sử hoạt động"
+    >
       {items.map((item) => (
         <li key={item.id}>
           <span className="timeline-dot" />
