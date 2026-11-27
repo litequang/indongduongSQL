@@ -110,4 +110,9 @@ export function canManageTarget(actor: Role, target: Role): boolean {
 }
 
 export type ChangeEntity =
-  "users" | "settings" | "customers" | "sales_orders" | "saved_designs";
+  | "users"
+  | "settings"
+  | "customers"
+  | "sales_orders"
+  | "saved_designs"
+  | "production_orders";

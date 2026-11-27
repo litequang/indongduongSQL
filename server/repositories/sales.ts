@@ -367,6 +367,16 @@ export async function transitionSales(
       [actor.id, id],
     );
   } else if (action === "cancel") {
+    const [production] = await rows(
+      db,
+      `SELECT COUNT(*) n FROM production_allocations a JOIN sales_order_items i ON i.id=a.sales_item_id WHERE i.order_id=? AND a.state='ACTIVE'`,
+      [id],
+    );
+    if (Number(production.n) > 0)
+      throw conflict(
+        "ACTIVE_PRODUCTION",
+        "Cần xử lý các lệnh sản xuất trước khi hủy đơn bán hàng.",
+      );
     if (
       [
         "CANCELLED",
@@ -376,7 +386,13 @@ export async function transitionSales(
         "READY_TO_SHIP",
       ].includes(current.status) ||
       items.some((item) =>
-        ["IN_PRODUCTION", "PRODUCTION_COMPLETED"].includes(item.status),
+        [
+          "IN_PRODUCTION",
+          "PRODUCTION_COMPLETED",
+          "READY_FOR_FINISHING",
+          "FINISHING",
+          "WAREHOUSE_READY",
+        ].includes(item.status),
       )
     )
       throw conflict(

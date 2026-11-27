@@ -42,7 +42,7 @@ export function registerSettingsRoutes(
   app.get(
     "/api/changes",
     wrap(async (req, res) => {
-      await readSession(req);
+      const session = await readSession(req);
       const q = z
         .object({
           cursor: z
@@ -58,14 +58,36 @@ export function registerSettingsRoutes(
         [q.cursor],
       );
       const page = data.slice(0, 100);
+      const productionIds = page
+        .filter((r) => r.entity === "production_orders")
+        .map((r) => r.entity_id);
+      const visibleIds = new Set<string>();
+      if (productionIds.length) {
+        const visible = await rows(
+          pool,
+          `SELECT id FROM production_orders WHERE id IN (${productionIds.map(() => "?").join(",")}) AND (status<>'DRAFT' OR created_by=?) AND (?<>'PRINTER' OR (status<>'DRAFT' AND printer_id=?))`,
+          [
+            ...productionIds,
+            session.user.id,
+            session.user.role,
+            session.user.id,
+          ],
+        );
+        for (const row of visible) visibleIds.add(row.id);
+      }
       res.json({
-        changes: page.map((r) => ({
-          sequence: String(r.sequence),
-          entity: r.entity,
-          entityId: r.entity_id,
-          version: Number(r.record_version),
-          deleted: Boolean(r.deleted),
-        })),
+        changes: page
+          .filter(
+            (r) =>
+              r.entity !== "production_orders" || visibleIds.has(r.entity_id),
+          )
+          .map((r) => ({
+            sequence: String(r.sequence),
+            entity: r.entity,
+            entityId: r.entity_id,
+            version: Number(r.record_version),
+            deleted: Boolean(r.deleted),
+          })),
         cursor: page.length ? String(page[page.length - 1].sequence) : q.cursor,
         hasMore: data.length > 100,
       });
