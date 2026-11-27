@@ -115,4 +115,5 @@ export type ChangeEntity =
   | "customers"
   | "sales_orders"
   | "saved_designs"
-  | "production_orders";
+  | "production_orders"
+  | "fulfillment";
