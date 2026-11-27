@@ -56,7 +56,30 @@ export async function resetTestData(
   const db = await pool.getConnection();
   try {
     await db.beginTransaction();
+    // Self references are cleared only inside this guarded synthetic-test reset.
+    await db.query(
+      "UPDATE production_allocations SET source_allocation_id=NULL,kind='OUTPUT',quantity=GREATEST(quantity,1) WHERE source_allocation_id IS NOT NULL",
+    );
+    await db.query(
+      "UPDATE production_orders SET source_order_id=NULL,run_kind='NORMAL' WHERE source_order_id IS NOT NULL",
+    );
     for (const table of [
+      "production_finishing_handoffs",
+      "production_design_prints",
+      "production_action_receipts",
+      "production_comments",
+      "production_cancellation_requests",
+      "production_issue_roles",
+      "production_issue_users",
+      "production_issues",
+      "production_plates",
+      "production_status_history",
+      "production_revisions",
+      "production_print_images",
+      "production_allocations",
+      "production_items",
+      "production_tags",
+      "production_orders",
       "sales_order_status_history",
       "sales_order_items",
       "sales_orders",

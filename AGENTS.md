@@ -22,7 +22,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 
 1. Before a new task: `git fetch origin`, `git status --short`, inspect branch/upstream/history. Preserve uncommitted changes; never reset/overwrite another agent's work.
 2. One writer per branch. PC and Cloud working concurrently use distinct task branches/worktrees and coordinate ownership in HANDOFF.md. Never assume another environment shares local DB/state.
-3. `main` is the stable tested release target. The initial source snapshot records provenance. Phase 02A uses `codex/phase-02a-sales-design`, based on `codex/sql-foundation`. Never force-push or auto-merge untested code. Merging main needs user review.
+3. `main` is the stable tested release target. The initial source snapshot records provenance. PC Phase 02B uses `codex/phase-02b-production`, based on accepted `codex/phase-02a-sales-design` at f649041. Never force-push or auto-merge untested code. Merging main or PR #1 needs user review.
 4. Never edit/push/deploy `litequang/indongduong` or Thờ Phượng Pro. Check remotes/diff/secrets before every push. Meaningful checkpoints only, push the assigned target branch.
 5. Before handoff update PROJECT_STATUS, HANDOFF, FEATURE_PARITY_MATRIX and TEST_REPORT with actual state. Record PC/CLOUD, branch, immutable checkpoint SHA, phase, completed/in-progress/pending work, files, migrations, environment, test commands/results/exit codes, known errors/blockers and next commands. A documentation-only handoff commit references the preceding tested code SHA, avoiding a circular self-SHA.
 

@@ -37,11 +37,16 @@ assert(
   sale,
   "Run the complete integration suite to create a persisted sales and design probe.",
 );
+const [production] = await rows(
+  pool,
+  "SELECT id FROM production_orders WHERE status='PRINTED' ORDER BY id LIMIT 1",
+);
+assert(production, "Run Phase 02B integration before the restart smoke.");
 const id = randomUUID();
 const username = `restart_${randomBytes(6).toString("hex")}`;
 const password = randomBytes(24).toString("base64url");
 await pool.execute(
-  "INSERT INTO users(id,username,name,role_code,password_hash) VALUES(?,?,?,'PRINTER',?)",
+  "INSERT INTO users(id,username,name,role_code,password_hash) VALUES(?,?,?,'MANAGER',?)",
   [
     id,
     username,
@@ -118,6 +123,12 @@ try {
   assert.equal(login.status, 200);
   const cookie = login.headers.get("set-cookie")!.split(";")[0];
   const profile = (await login.json()).user;
+  const beforeProduction = await fetch(
+    origin + "/api/production-orders/" + production.id,
+    { headers: { Cookie: cookie } },
+  );
+  assert.equal(beforeProduction.status, 200);
+  const productionSnapshot = await beforeProduction.json();
   await stop();
   await start();
   const me = await fetch(origin + "/api/auth/me", {
@@ -147,10 +158,16 @@ try {
   });
   assert.equal(customer.status, 200);
   assert.equal((await customer.json()).customer.id, sale.customer_id);
+  const afterProduction = await fetch(
+    origin + "/api/production-orders/" + production.id,
+    { headers: { Cookie: cookie } },
+  );
+  assert.equal(afterProduction.status, 200);
+  assert.deepEqual(await afterProduction.json(), productionSnapshot);
   assert.equal((await fetch(origin + "/server.cjs")).status, 404);
   assert.equal((await fetch(origin + "/build/server.cjs")).status, 404);
   console.log(
-    "PASS compiled Node process restart: MariaDB session, customer, order and design snapshot survive. Backend artifacts stay private.",
+    "PASS compiled Node process restart: session, customer, sales/design and complete production snapshot (allocation, revision, plate, issues, handoff) survive. Backend artifacts stay private.",
   );
 } finally {
   await stop();

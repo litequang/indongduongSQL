@@ -12,6 +12,7 @@ import {
   migrate,
   isReady,
   migrationDirectory,
+  migrationFiles,
 } from "../../server/database/migrate";
 import { createApp } from "../../server/app";
 import {
@@ -79,7 +80,11 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
             migrate(pool, config.DB_NAME),
             migrate(pool, config.DB_NAME),
           ]);
-          assert.deepEqual(applied.flat(), ["003_sales_design.sql"]);
+          assert.deepEqual(applied.flat(), [
+            "003_sales_design.sql",
+            "004_production.sql",
+            "005_production_link_handoff.sql",
+          ]);
           const [state] = await rows(
             pool,
             "SELECT change_sequence FROM system_state WHERE id=1",
@@ -89,11 +94,15 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
           await rm(base, { recursive: true, force: true });
         }
       } else {
+        const prior = await rows(pool, "SELECT name FROM schema_migrations");
+        const pending = (await migrationFiles()).filter(
+          (name) => !prior.some((row) => row.name === name),
+        );
         const applied = await Promise.all([
           migrate(pool, config.DB_NAME),
           migrate(pool, config.DB_NAME),
         ]);
-        assert.deepEqual(applied.flat(), []);
+        assert.deepEqual(applied.flat(), pending);
       }
       assert.deepEqual(await migrate(pool, config.DB_NAME), []);
       assert.equal(await isReady(pool), true);

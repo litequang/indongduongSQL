@@ -1,8 +1,8 @@
-name: SQL Foundation and Phase 02A CI
+name: SQL Foundation and Phase 02A/B CI
 on:
   push:
-    branches: [main, codex/sql-foundation, 'task/**', 'codex/**']
-    paths-ignore: ['docs/**', 'README.md', 'THIRD_PARTY_NOTICES.md']
+    branches: [main, codex/sql-foundation, "task/**", "codex/**"]
+    paths-ignore: ["docs/**", "README.md", "THIRD_PARTY_NOTICES.md"]
   pull_request:
 permissions:
   contents: read
@@ -19,13 +19,13 @@ jobs:
           # Disposable CI service only. No production secret/account is used.
           MARIADB_PASSWORD: ci-disposable-service-only
           MARIADB_ROOT_PASSWORD: ci-disposable-root-only
-        ports: ['3306:3306']
+        ports: ["3306:3306"]
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s --health-timeout=5s --health-retries=20
     env:
       DB_HOST: 127.0.0.1
-      DB_PORT: '3306'
+      DB_PORT: "3306"
       DB_NAME: indongduong_sql_ci_unused
       DB_USER: indongduong_sql_ci_unused
       DB_EXPECTED_NAME: indongduong_sql_ci_unused
@@ -34,7 +34,7 @@ jobs:
       TEST_DB_NAME: indongduong_sql_test
       TEST_DB_USER: indongduong_sql_test
       TEST_DB_PASSWORD: ci-disposable-service-only
-      ALLOW_TEST_DATABASE: '1'
+      ALLOW_TEST_DATABASE: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,7 +47,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run test:legacy
-      - name: Real MariaDB migrations, Foundation and Phase 02A API
+      - name: Real MariaDB migrations, Foundation and Phase 02A/B API
         run: npm run test:integration
       - run: npm run build
       - run: npm run check:runtime
@@ -55,7 +55,7 @@ jobs:
         run: npm run test:restart
       - run: npx playwright install --with-deps chromium
       # Dedicated test fixtures are reset only inside the guarded _test database.
-      - name: Foundation and Phase 02A Playwright suites
+      - name: Foundation and Phase 02A/B Playwright suites
         run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()

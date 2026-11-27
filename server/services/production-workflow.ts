@@ -12,7 +12,7 @@ import {
 } from "../../shared/production";
 import { rows } from "../database/pool";
 import { allowed, fresh } from "../middleware/http";
-import { changed,audit } from "./audit";
+import { changed, audit } from "./audit";
 import {
   businessCode,
   conflict,
@@ -651,7 +651,9 @@ export async function actProduction(
         await revisionEvent(db, id, r.revision + 1, actor, t, input.reason);
       }
       if (input.printerId !== r.printer_id) {
-        await audit(db,actor.id,'PRODUCTION_PRINTER_UNASSIGNED',id,{formerPrinterId:r.printer_id});
+        await audit(db, actor.id, "PRODUCTION_PRINTER_UNASSIGNED", id, {
+          formerPrinterId: r.printer_id,
+        });
         target = "WAITING_ACCEPTANCE";
         await db.execute(
           "UPDATE production_orders SET printer_id=?,acknowledged_revision=0,accepted_at=NULL WHERE id=?",

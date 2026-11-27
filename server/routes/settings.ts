@@ -75,23 +75,32 @@ export function registerSettingsRoutes(
           ],
         );
         for (const row of visible) visibleIds.add(row.id);
-        if(session.user.role==='PRINTER'){
-          const removed=await rows(pool,`SELECT DISTINCT entity_id FROM audit_logs WHERE entity_id IN (${productionIds.map(()=>'?').join(',')}) AND action='PRODUCTION_PRINTER_UNASSIGNED' AND JSON_UNQUOTE(JSON_EXTRACT(details,'$.formerPrinterId'))=?`,[...productionIds,session.user.id]);
-          for(const row of removed)if(!visibleIds.has(row.entity_id))removedIds.add(row.entity_id);
+        if (session.user.role === "PRINTER") {
+          const removed = await rows(
+            pool,
+            `SELECT DISTINCT entity_id FROM audit_logs WHERE entity_id IN (${productionIds.map(() => "?").join(",")}) AND action='PRODUCTION_PRINTER_UNASSIGNED' AND JSON_UNQUOTE(JSON_EXTRACT(details,'$.formerPrinterId'))=?`,
+            [...productionIds, session.user.id],
+          );
+          for (const row of removed)
+            if (!visibleIds.has(row.entity_id)) removedIds.add(row.entity_id);
         }
       }
       res.json({
         changes: page
           .filter(
             (r) =>
-              r.entity !== "production_orders" || visibleIds.has(r.entity_id) || removedIds.has(r.entity_id),
+              r.entity !== "production_orders" ||
+              visibleIds.has(r.entity_id) ||
+              removedIds.has(r.entity_id),
           )
           .map((r) => ({
             sequence: String(r.sequence),
             entity: r.entity,
             entityId: r.entity_id,
             version: Number(r.record_version),
-            deleted: Boolean(r.deleted) || (r.entity==='production_orders' && removedIds.has(r.entity_id)),
+            deleted:
+              Boolean(r.deleted) ||
+              (r.entity === "production_orders" && removedIds.has(r.entity_id)),
           })),
         cursor: page.length ? String(page[page.length - 1].sequence) : q.cursor,
         hasMore: data.length > 100,

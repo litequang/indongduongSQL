@@ -660,9 +660,18 @@ test("Phase 02A through authenticated HTTP and real MariaDB", async (t) => {
       );
       const tables = await rows(
         pool,
-        "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('production_orders','finishing_tasks','finished_goods','shipments')",
+        "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('finishing_tasks','finished_goods','shipments')",
       );
       assert.deepEqual(tables, []);
+      const [productionCount] = await rows(
+        pool,
+        "SELECT COUNT(*) n FROM production_orders",
+      );
+      assert.equal(
+        Number(productionCount.n),
+        0,
+        "Sales confirmation alone never creates production output",
+      );
       await assert.rejects(
         pool.execute(
           "UPDATE sales_order_items SET design_version_id=? WHERE id=?",
