@@ -193,6 +193,7 @@ test("Phase 02C real MariaDB and authenticated HTTP", async (t) => {
   ) => ({
     id: randomUUID(),
     productName: "Lô in thử",
+    designVersionId: design.design.current.id,
     quantity,
     allocations,
     requiresFinishing,

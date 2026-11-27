@@ -1,27 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
 import { Check, Circle, Clock3 } from "lucide-react";
 import type {
   OrderProgress,
   ProductProgress,
 } from "../../../shared/fulfillment";
-import { api } from "../../services/api";
 import { BusinessDetail, localNumber } from "../business/common";
 
-export function ProgressPanel({ orderId }: { orderId: string }) {
-  const progress = useQuery({
-    queryKey: ["sales_orders", "progress", orderId],
-    queryFn: () => api<OrderProgress>("/sales-orders/" + orderId + "/progress"),
-  });
+export function ProgressPanel({
+  order,
+  loading,
+  error,
+}: {
+  order?: OrderProgress;
+  loading: boolean;
+  error: Error | null;
+}) {
   return (
     <section className="business-subsection">
       <h3>Tiến độ xử lý đơn</h3>
-      <BusinessDetail loading={progress.isPending} error={progress.error}>
-        {progress.data && (
-          <>
-            <OrderStepper order={progress.data} />
-            <ProductChecklist order={progress.data} />
-          </>
-        )}
+      <BusinessDetail loading={loading} error={error}>
+        {order && <OrderStepper order={order} />}
       </BusinessDetail>
     </section>
   );
@@ -95,27 +92,33 @@ export function ProductChecklist({
                   <span className="status-badge positive">Đủ hàng</span>
                 ) : null)}
             </div>
-            <p>
-              Đặt {localNumber(item.ordered)} · Phân bổ{" "}
-              {localNumber(item.allocated)} · In bàn giao{" "}
-              {localNumber(item.printed)} · Đạt {localNumber(item.accepted)} ·
-              Còn {localNumber(item.available)}
-            </p>
-            {(item.rejected > 0 || item.short > 0) && (
-              <p>
-                Không đạt {localNumber(item.rejected)} · Thiếu{" "}
-                {localNumber(item.short)}
-              </p>
-            )}
-            {item.replacementPending > 0 && (
-              <p>
-                In lại chờ chính sách {localNumber(item.replacementPending)}
-              </p>
-            )}
-            {item.reason && !item.dispatched && <p>{item.reason}</p>}
+            <ProductMetrics item={item} />
           </li>
         );
       })}
     </ul>
+  );
+}
+
+export function ProductMetrics({ item }: { item: ProductProgress }) {
+  return (
+    <>
+      {" "}
+      <p>
+        Đặt {localNumber(item.ordered)} · Phân bổ {localNumber(item.allocated)}{" "}
+        · In bàn giao {localNumber(item.printed)} · Đạt{" "}
+        {localNumber(item.accepted)} · Còn {localNumber(item.available)}
+      </p>
+      {(item.rejected > 0 || item.short > 0) && (
+        <p>
+          Không đạt {localNumber(item.rejected)} · Thiếu{" "}
+          {localNumber(item.short)}
+        </p>
+      )}
+      {item.replacementPending > 0 && (
+        <p>In lại chờ chính sách {localNumber(item.replacementPending)}</p>
+      )}
+      {item.reason && !item.dispatched && <p>{item.reason}</p>}
+    </>
   );
 }

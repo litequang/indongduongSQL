@@ -3223,3 +3223,7 @@ kbd {
 .fulfillment-section > h2 {
   margin-bottom: 0.5rem;
 }
+.fulfillment-product-metrics {
+  padding: 0.65rem 0.85rem;
+  color: var(--muted-foreground);
+}
