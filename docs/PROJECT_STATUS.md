@@ -1,6 +1,6 @@
 # Project status
 
-PC, 2026-11-27. Branch `codex/phase-04-parity-cleanup` starts at Phase 03 handoff `aacd3fb329a8f0828df6a3b71316b33746968310`, tested inherited code `9231886544ec92415e7d9b8dce36f070a76c2489`. The owner authorized Phase 04 with the next-task request; the earlier explicit local-testing choice while no R2 dev bucket exists remains in force. Phase 00 through local Phase 03 are inherited. Current immutable tested code/CI are recorded in [HANDOFF.md](HANDOFF.md) by the following documentation checkpoint; [TEST_REPORT.md](TEST_REPORT.md) indexes executed evidence.
+PC, 2026-11-27. Branch `codex/phase-04-parity-cleanup` starts at Phase 03 handoff `aacd3fb329a8f0828df6a3b71316b33746968310`, tested inherited code `9231886544ec92415e7d9b8dce36f070a76c2489`. The owner authorized Phase 04 with the next-task request; the earlier explicit local-testing choice while no R2 dev bucket exists remains in force. Phase 00 through local Phase 03 are inherited. Current tested code is **7a8750a6009a977a0b74c5779e37b255db46fdbf**; remote CI and cross-environment evidence are recorded in [HANDOFF.md](HANDOFF.md) by the following documentation checkpoint; [TEST_REPORT.md](TEST_REPORT.md) indexes executed evidence.
 
 ## Delivered
 

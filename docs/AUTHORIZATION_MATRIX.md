@@ -1,5 +1,11 @@
 # Authorization matrix
 
+## Phase 04 overlay
+
+The role table below describes hard baseline ceilings. Developer-only `PUT /access` can restrict/re-enable within these ceilings; user override precedes role override, and all existing object/specialist/workflow checks still apply. Effective permission changes revoke affected sessions. Policy administration remains fixed Developer-only; other users receive only their own effective permissions/features. Production report/CSV ceilings are Developer/Admin/Manager/Designer/Sale; CSV additionally requires export permission. Optional disabled modules reject writes while authorized history remains readable; production/finishing cannot be disabled. See PHASE_04_PARITY for mappings and retired source grants.
+
+Avatars can be edited by the user themselves or an authorized staff administrator subject to target-role hierarchy and effective staff permission. Only verified exact-target registry IDs link; unlinked images remain owner private, linked avatars follow the authenticated staff-directory read scope. No external/data URL or frontend role claim grants authority.
+
 ## Phase 03
 
 Image bytes follow current read authority on their design/production relationship. Unattached images are owner only; production drafts remain creator only, PRINTER reads current assigned official runs only. Writes require a design writer or creator of a production draft, with ACTIVE fixed-target registry checks before linking. Official image mutation is rejected. Ownership alone does not bypass a changed target state. Deletion requires no historical reference. Developer alone creates/runs image backup/verify/restore/cleanup jobs and reads coverage. Storage status exposes booleans to active accounts.
@@ -42,15 +48,15 @@ Phase 02A customer, sales and sample reads mirror authenticated-active Firestore
 
 ## Phase 02C fulfillment
 
-| Action | Authority |
-| --- | --- |
-| Receive, claim, start, complete, confirm no-work, respond to finishing cancellation | FINISHER. An assigned task is restricted to its assigned user. Only the claimant starts, completes or responds. |
-| Assign ready task, change priority, request finishing cancellation | Developer, Admin, Manager, Designer or Sale. A claimed task needs its claimant's response. |
-| Product acceptance | Sale and management per source callable, or the assigned/claiming FINISHER. Review requires task completion/no-work or an ended finishing cancellation. |
-| Stock and dispatch review | WAREHOUSE and commercial roles. FINISHER can view their scoped lots. |
-| Execute or reverse whole-order dispatch | Exact WAREHOUSE. |
-| Create or advance shipment, inspect returned lines | Sale and management. WAREHOUSE can read delivery status and source slips. |
-| Report fulfillment issue | Commercial/design roles or the in-scope FINISHER for finishing. WAREHOUSE or commercial roles for an accepted lot. |
-| Close issue | Reporter cancels. Selected user/role resolves. Upward inheritance applies to management recipients only. |
+| Action                                                                              | Authority                                                                                                                                               |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Receive, claim, start, complete, confirm no-work, respond to finishing cancellation | FINISHER. An assigned task is restricted to its assigned user. Only the claimant starts, completes or responds.                                         |
+| Assign ready task, change priority, request finishing cancellation                  | Developer, Admin, Manager, Designer or Sale. A claimed task needs its claimant's response.                                                              |
+| Product acceptance                                                                  | Sale and management per source callable, or the assigned/claiming FINISHER. Review requires task completion/no-work or an ended finishing cancellation. |
+| Stock and dispatch review                                                           | WAREHOUSE and commercial roles. FINISHER can view their scoped lots.                                                                                    |
+| Execute or reverse whole-order dispatch                                             | Exact WAREHOUSE.                                                                                                                                        |
+| Create or advance shipment, inspect returned lines                                  | Sale and management. WAREHOUSE can read delivery status and source slips.                                                                               |
+| Report fulfillment issue                                                            | Commercial/design roles or the in-scope FINISHER for finishing. WAREHOUSE or commercial roles for an accepted lot.                                      |
+| Close issue                                                                         | Reporter cancels. Selected user/role resolves. Upward inheritance applies to management recipients only.                                                |
 
 All reads and writes require active sessions. The global fulfillment feed emits an opaque workspace invalidation. The applicable list/detail endpoint separately checks its role and object scope.

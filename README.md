@@ -1,10 +1,10 @@
 # In Đông Dương SQL
 
-Không gian quản lý xưởng in độc lập: **React + TypeScript + Vite/PWA, Express, MariaDB**. Design System shadcn/ui + Radix, Tailwind v4, TanStack Query/Table, Lucide. Mục tiêu Hawk Host/cPanel/Passenger; chưa triển khai hosting trong Phase 01.
+Không gian quản lý xưởng in độc lập: **React + TypeScript + Vite/PWA, Express, MariaDB**. Design System shadcn/ui + Radix, Tailwind v4, TanStack Query/Table, Lucide. Mục tiêu Hawk Host/cPanel/Passenger; chưa triển khai hosting.
 
-Đã triển khai nền tảng SQL và các phân hệ khách hàng/import, đơn bán, thư viện mẫu, sản xuất/kẽm, gia công/nghiệm thu, kho/xuất nguyên đơn và giao hàng. Phase 03 bổ sung ảnh riêng tư qua registry/R2, nháp ảnh thiết bị, thông báo và backup/verify/khôi phục ảnh thiếu. Chưa cấu hình R2 dev thật: upload/backup của ứng dụng dev báo chưa khả dụng; kiểm thử dùng tệp tổng hợp và kho thử riêng. Báo cáo nâng cao và các quyết định nghiệp vụ còn mở xem [PROJECT_STATUS](docs/PROJECT_STATUS.md). Không có thao tác thành công giả.
+Đã triển khai nền tảng SQL và các phân hệ khách hàng/import, đơn bán, thư viện mẫu, sản xuất/kẽm, gia công/nghiệm thu, kho/xuất nguyên đơn và giao hàng. Phase 03 bổ sung ảnh riêng tư, nháp ảnh thiết bị, thông báo và backup/verify/khôi phục ảnh thiếu. Phase 04 bổ sung báo cáo SQL/Recharts/CSV, quyền cá nhân/vai trò, công tắc phân hệ, avatar riêng tư và Hướng dẫn sử dụng trong menu. Chưa cấu hình R2 dev thật: upload/backup dev báo chưa khả dụng; kiểm thử dùng tệp tổng hợp và kho thử riêng. Các quyết định còn mở xem [PROJECT_STATUS](docs/PROJECT_STATUS.md). Không có thao tác thành công giả.
 
-Không cần Firebase Console. Không chuyển dữ liệu/tài khoản/mật khẩu Firebase cũ. Mã tham khảo đã được cô lập trong `legacy/firebase`, không chạy trong bản SQL.
+Không cần Firebase Console. Không chuyển dữ liệu/tài khoản/mật khẩu Firebase cũ. Cây tham khảo đã được gỡ sau đối chiếu; nguồn gốc, checkpoint Git và kiểm thử thay thế ở [PHASE_04_PARITY](docs/PHASE_04_PARITY.md).
 
 ## Cài mới
 
@@ -46,4 +46,4 @@ Test DB/account phải khác DB ứng dụng và tên bắt đầu indongduong_s
 - [UI architecture](docs/UI_UX_ARCHITECTURE.md), [Design System](docs/DESIGN_SYSTEM.md), [Role workspaces](docs/ROLE_WORKSPACES.md), [components](docs/UI_COMPONENT_INVENTORY.md).
 - [Hawk Host preparation](docs/HAWKHOST_DEPLOYMENT.md), [third-party notices](THIRD_PARTY_NOTICES.md), [source provenance](docs/SOURCE_PROVENANCE.md).
 
-GitHub là nguồn chính thức. Một writer mỗi branch; PC/Cloud song song dùng branch riêng. Không force push, không tự merge main/PR, không thay đổi repo Firebase gốc/Thờ Phượng Pro. Branch PC hiện tại `codex/phase-03-private-operations` dựa trên bàn giao Cloud 02C `5d5af17`; main chưa được merge SQL. Phase 04 và deployment cần nhiệm vụ mới. Nghiệm thu R2 dev thật, thiết bị vật lý và Hawk Host còn LOCAL_VALIDATION_REQUIRED.
+GitHub là nguồn chính thức. Một writer mỗi branch; PC/Cloud song song dùng branch riêng. Không force push, không tự merge main/PR, không thay đổi repo Firebase gốc/Thờ Phượng Pro. Branch PC hiện tại `codex/phase-04-parity-cleanup`, code đã kiểm thử `7a8750a`, dựa trên bàn giao Phase 03 `aacd3fb`; main chưa được merge SQL. Phase 04 đã được giao trong nhiệm vụ này; Phase 05 deployment cần cho phép riêng. Nghiệm thu R2 dev thật, thiết bị vật lý và Hawk Host còn LOCAL_VALIDATION_REQUIRED.
