@@ -64,7 +64,8 @@ test("Phase 02B production via real MariaDB and authenticated HTTP", async (t) =
     printer = await staff("PRINTER"),
     other = await staff("PRINTER", "2"),
     sale = await staff("SALE"),
-    finisher = await staff("FINISHER");
+    finisher = await staff("FINISHER"),
+    warehouse = await staff("WAREHOUSE");
   const customer = randomUUID();
   assert.equal(
     (
@@ -537,6 +538,39 @@ test("Phase 02B production via real MariaDB and authenticated HTTP", async (t) =
   await t.test(
     "issues require reporter/recipient authority; comments never ACK or close issues",
     async () => {
+      assert.equal(
+        (
+          await action(
+            run,
+            "issue-report",
+            { type: "GENERAL", message: "Kho không có quyền báo cáo sản xuất" },
+            warehouse.client,
+          )
+        ).status,
+        403,
+      );
+      assert.equal(
+        (
+          await action(
+            run,
+            "comment",
+            { content: "Không có quyền trao đổi lệnh" },
+            warehouse.client,
+          )
+        ).status,
+        403,
+      );
+      assert.equal(
+        (
+          await action(
+            run,
+            "comment",
+            { content: "Không có quyền trao đổi lệnh" },
+            finisher.client,
+          )
+        ).status,
+        403,
+      );
       assert.equal(
         (
           await action(

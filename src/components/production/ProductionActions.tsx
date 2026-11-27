@@ -115,6 +115,7 @@ export function ProductionActions({
   );
   const pending = detail.cancellations.find((c) => c.status === "PENDING");
   const canResolve = (issue: ProductionIssue) => {
+    if (actor.role === "WAREHOUSE") return false;
     const rank: Partial<Record<Role, number>> = {
       MANAGER: 1,
       ADMIN: 2,
@@ -128,6 +129,18 @@ export function ProductionActions({
       )
     );
   };
+  if (actor.role === "WAREHOUSE")
+    return (
+      <section className="surface production-panel">
+        <h2>Theo dõi lệnh in</h2>
+        <p>Các thao tác kho và báo cáo của kho thuộc Phase 02C.</p>
+        {detail.issues.map((i) => (
+          <p key={i.id}>
+            {i.type} · {i.message} · {i.status}
+          </p>
+        ))}
+      </section>
+    );
   return (
     <section
       className="surface production-panel form-stack"
@@ -600,31 +613,35 @@ export function ProductionActions({
           )}
         </div>
       </details>
-      <h3>Trao đổi</h3>
-      <form
-        className="form-stack"
-        onSubmit={(e) => {
-          e.preventDefault();
-          act("comment", { content: comment });
-        }}
-      >
-        <FormField id="production-comment" label="Bình luận">
-          <textarea
-            id="production-comment"
-            rows={2}
-            maxLength={1000}
-            required
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-        </FormField>
-        <Button
-          variant="outline"
-          disabled={mutation.isPending || !comment.trim()}
-        >
-          Gửi bình luận
-        </Button>
-      </form>
+      {(commercial || assigned) && (
+        <>
+          <h3>Trao đổi</h3>
+          <form
+            className="form-stack"
+            onSubmit={(e) => {
+              e.preventDefault();
+              act("comment", { content: comment });
+            }}
+          >
+            <FormField id="production-comment" label="Bình luận">
+              <textarea
+                id="production-comment"
+                rows={2}
+                maxLength={1000}
+                required
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </FormField>
+            <Button
+              variant="outline"
+              disabled={mutation.isPending || !comment.trim()}
+            >
+              Gửi bình luận
+            </Button>
+          </form>
+        </>
+      )}
       <p className="production-hint">
         Bình luận không thay cho ACK kỹ thuật, xử lý sự cố hay phản hồi hủy.
       </p>

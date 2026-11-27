@@ -184,7 +184,6 @@ export const ISSUE_POLICIES: Record<
       "ADMIN",
       "DEVELOPER",
       "FINISHER",
-      "WAREHOUSE",
     ],
     recipients: ["MANAGER", "ADMIN", "DEVELOPER"],
   },

@@ -777,6 +777,7 @@ export async function actProduction(
     case "issue-assign":
     case "issue-resolve":
     case "issue-cancel": {
+      allowed(actor.role !== "WAREHOUSE");
       const [issue] = await rows(
         db,
         "SELECT * FROM production_issues WHERE id=? AND order_id=?",
@@ -857,6 +858,10 @@ export async function actProduction(
       break;
     }
     case "comment":
+      allowed(
+        canComposeProduction(actor.role) ||
+          (actor.role === "PRINTER" && r.printer_id === actor.id),
+      );
       statusAllowed(r, [...preprint, "PRINTING", "PRINTED", "CANCELLED"]);
       await db.execute(
         "INSERT INTO production_comments(id,order_id,content,actor_id,actor_name) VALUES(?,?,?,?,?)",
