@@ -658,11 +658,10 @@ test("Phase 02A through authenticated HTTP and real MariaDB", async (t) => {
         reopened.data.history[0].reason,
         "Kiểm thử trạng thái hạ nguồn",
       );
-      const tables = await rows(
-        pool,
-        "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('finishing_tasks','finished_goods','shipments')",
-      );
-      assert.deepEqual(tables, []);
+      for (const table of ["finishing_tasks", "finished_goods", "shipments"]) {
+        const [count] = await rows(pool, `SELECT COUNT(*) AS n FROM ${table}`);
+        assert.equal(Number(count.n), 0);
+      }
       const [productionCount] = await rows(
         pool,
         "SELECT COUNT(*) n FROM production_orders",

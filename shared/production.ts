@@ -20,7 +20,7 @@ export const PRODUCTION_LABELS: Record<ProductionStatus, string> = {
   ACCEPTED: "Đã nhận",
   WAITING_PRINT: "Chờ in",
   PRINTING: "Đang in",
-  PRINTED: "In xong · chờ gia công",
+  PRINTED: "In xong",
   CANCELLED: "Đã hủy",
 };
 export const PLATE_STATUSES = [
@@ -254,6 +254,8 @@ export interface ProductionDetail {
     status: "PENDING_02C";
     replacement: boolean;
     superseded: boolean;
+    taskStatus: string | null;
+    inspected: boolean;
   }[];
 }
 export const actionBase = z

@@ -860,10 +860,7 @@ test("Phase 02B production via real MariaDB and authenticated HTTP", async (t) =
             e.entity === "production_orders" && e.entityId === linked.id,
         ),
       );
-      const [stock] = await rows(
-        pool,
-        "SELECT COUNT(*) n FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name='finished_goods'",
-      );
+      const [stock] = await rows(pool, "SELECT COUNT(*) n FROM finished_goods");
       assert.equal(Number(stock.n), 0);
     },
   );

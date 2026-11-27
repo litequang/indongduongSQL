@@ -1,10 +1,8 @@
 # Project status
 
-PC handoff, 2026-11-27. Task branch `codex/phase-02b-production`, based on accepted Phase 02A `f6490410d9c8b3cf0deb47c527622a8df6384740`. Tested code `d5383080644b06a34cc3f09db78de3196f098e55`. Phase 00/01/UI Foundation and Phase 02A are inherited and locally accepted; Phase 02B production is implemented. This is not a merged main release. See [HANDOFF.md](HANDOFF.md), [PHASE_02A_PC_ACCEPTANCE.md](PHASE_02A_PC_ACCEPTANCE.md) and [PHASE_02B_TEST_REPORT.md](PHASE_02B_TEST_REPORT.md) for actual evidence/CI.
+Cloud, 2026-11-27. Branch `codex/phase-02c-fulfillment` starts at the Phase 02B production handoff `54e14508acb40033ac5005eb64990007b22c1632`. Phase 00, 01, UI Foundation and 02A/B are inherited. See [HANDOFF.md](HANDOFF.md) and [PHASE_02C_TEST_REPORT.md](PHASE_02C_TEST_REPORT.md) for the code checkpoint and executed evidence.
 
 ## Delivered
-
-Local verification passes 30/30 real DB/HTTP results and 14/14 browser suites. [GitHub Actions 45926107238](https://github.com/litequang/indongduongSQL/actions/runs/45926107238) completed success at the exact tested code checkpoint above. Detailed PASS/known legacy FAIL/SKIP evidence belongs to TEST_REPORT and its linked reports.
 
 - Phase 00 and Phase 01 with UI Foundation are inherited from the PC branch.
 - Customers have commercial CRUD, soft retirement, indexed duplicate identity, contact and external reference fields, server-side search/filter/sort/page, order history, per-record audit and optimistic versions.
@@ -15,8 +13,12 @@ Local verification passes 30/30 real DB/HTTP results and 14/14 browser suites. [
 - Parallel plate lifecycle, assigned-printer workspace/acceptance, technical revision/ACK/start/complete, urgency, recipient-scoped issues, comments and pre-print cancellation are backend-authoritative. Cancellation retains and releases only its allocations; reassignment removes former-printer access and invalidates its view.
 - Print completion records actual/spoilage sheets and explicit pending 02C handoffs. Supplemental/reprint runs retain source history and avoid double-counting requested product output. Official standalone runs can be linked after printing with superseded handoff history and exactly-once design usage. Migrations 004/005 follow unchanged 001–003.
 
-## Pending phases
+- Phase 02C adds explicit once-only receipt of print handoffs, assigned or claimable product finishing, no-work checkpoints, quantity inspection and stock receipts. Standalone lots use their production source. Positive OUTPUT quantities conserve the original order cap.
+- Inventory is lot-based with movement history. WAREHOUSE dispatches all active siblings in one transaction. Sales authority creates and advances shipments by command, records failed delivery and inspects each returned line. Available stock increases only for lines confirmed as restockable.
+- Sales progress reports source quantities and real stages through delivery. Delivery completes a whole order. Orders with dispatch history retain their history and the prior force-reopen action is blocked.
 
-Phase 02C owns finishing/no-work acceptance, stock, sibling readiness, whole-order dispatch and shipment. It is not implemented or authorized by this PC task; [PHASE_02C_HANDOFF.md](PHASE_02C_HANDOFF.md) prepares the next owner. Phase 03 owns private R2, device Blob attachments, notifications and backup. SQL metadata drafts are durable only after acknowledged Save; browser state/cache remains memory-only. Unavailable actions are explicit on UI. Full source parity is not claimed. Real Hawk Host hosting and physical devices remain LOCAL_VALIDATION_REQUIRED. [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) owns detailed coverage.
+## Pending phases and owner decisions
 
-Local environment: Windows, Node 22.22.2/npm 10.9.7, dedicated MariaDB 11.4.9 at 127.0.0.1:3307, distinct dev/test accounts. Local app URL http://localhost:4100. Test fixtures remain only in the guarded test DB; owner development setup/data is separate. Shared phone identities, import retention, direct-route fulfillment and operational replacement acceptance remain owner decisions.
+Non-printing products remain commercially confirmed and show the required physical source decision. REPRINT handoffs remain traceable and blocked from acceptance until the owner confirms how to reconcile the original, rejected and replacement quantities. Mixed/damaged/held returns keep the outstanding dispatch open for follow-up. Replacement and reconciliation of those held or lost goods need operating instructions.
+
+Phase 03 owns private R2, Blob drafts, backups and notifications. Physical devices and Hawk Host remain LOCAL_VALIDATION_REQUIRED. Shared customer phone identity and import retention remain owner decisions. [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) records detailed coverage.

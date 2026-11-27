@@ -6,7 +6,7 @@ One modular Express application, one MariaDB database, one same-origin React/Typ
 
 Passwords: native Node scrypt with random salts; DB holds only password hashes and hashed opaque session tokens. HttpOnly, SameSite=Lax cookies are Secure in production. Mutations require configured Origin and session-bound CSRF header; setup/login require Origin too. Roles/active state are resolved on every request and revalidated inside mutation transactions. Locking/password/role changes revoke sessions immediately. Developer-only first-run secret is supplied out of band, consumed by locked persistent system state, never bundled or logged.
 
-Core schema: roles/users/sessions/settings/setting_options/audit_logs/system_state/schema_migrations/change_events/auth_rate_limits. No business seed. DATABASE_SCHEMA.md describes implemented Phase 02A relations and planned downstream tables. Only import candidates and small audit context use JSON.
+Core schema: roles/users/sessions/settings/setting_options/audit_logs/system_state/schema_migrations/change_events/auth_rate_limits. No business seed. DATABASE_SCHEMA.md describes implemented Phase 02A–C relations and planned private storage. JSON is limited to bounded structures such as import candidates, recipient selection and audit context.
 
 Migrations: ordered immutable files, checksums, MariaDB GET_LOCK, durable running/applied/failed state and statement checkpoint. MariaDB DDL implicitly commits: no false atomic rollback promise. A failed/incomplete migration blocks automatic continuation until an operator inspects partial schema. Successfully applied reruns are no-ops; edited checksums are rejected.
 

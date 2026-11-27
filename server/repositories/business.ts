@@ -20,7 +20,12 @@ export function fingerprint(input: unknown) {
 }
 export async function businessCode(
   db: PoolConnection,
-  entity: "customers" | "sales_orders" | "production_orders",
+  entity:
+    | "customers"
+    | "sales_orders"
+    | "production_orders"
+    | "warehouse_dispatches"
+    | "shipments",
 ) {
   await db.execute(
     "UPDATE business_counters SET value=value+1 WHERE entity=?",
@@ -31,13 +36,14 @@ export async function businessCode(
     "SELECT value FROM business_counters WHERE entity=?",
     [entity],
   );
-  return (
-    (entity === "customers"
-      ? "KH-"
-      : entity === "sales_orders"
-        ? "SO-"
-        : "LIN-") + String(row.value).padStart(6, "0")
-  );
+  const prefixes = {
+    customers: "KH-",
+    sales_orders: "SO-",
+    production_orders: "LIN-",
+    warehouse_dispatches: "PX-",
+    shipments: "GH-",
+  };
+  return prefixes[entity] + String(row.value).padStart(6, "0");
 }
 export const pageFields = {
   page: z.coerce.number().int().min(1).max(100000).default(1),

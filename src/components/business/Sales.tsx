@@ -1,3 +1,5 @@
+import type { OrderProgress } from "../../../shared/fulfillment";
+import { ProductMetrics, ProgressPanel } from "../fulfillment/Progress";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -51,6 +53,7 @@ type Detail = {
   items: SalesItem[];
   history: SalesHistory[];
   activity: AuditEntry[];
+  hasDispatchHistory: boolean;
 };
 type OrderAction = "confirm" | "cancel" | "force-reopen";
 const actionText: Record<OrderAction, { title: string; description: string }> =
@@ -394,6 +397,14 @@ function SalesDetails({
   onSaved: (detail: Detail) => void;
 }) {
   const { order, items, history, activity } = detail;
+  const progress = useQuery({
+    queryKey: ["sales_orders", "progress", order.id],
+    queryFn: () =>
+      api<OrderProgress>("/sales-orders/" + order.id + "/progress"),
+  });
+  const productProgress = new Map(
+    progress.data?.products.map((item) => [item.id, item]),
+  );
   const [action, setAction] = useState<OrderAction | null>(null);
   const [reason, setReason] = useState("");
   const mutation = useMutation({
@@ -441,81 +452,89 @@ function SalesDetails({
           { label: "Ghi chú nội bộ", value: order.internalNote },
         ]}
       />
+      <ProgressPanel
+        order={progress.data}
+        loading={progress.isPending}
+        error={progress.error}
+      />
       <section className="business-subsection">
         <h3>Sản phẩm ({items.length})</h3>
         {items.length === 0 && <p className="muted">Đơn chưa có sản phẩm.</p>}
-        {items.map((item) => (
-          <details className="business-line-details" key={item.id}>
-            <summary>
-              <strong>{item.productName}</strong>
-              <span>{localNumber(item.quantity)} túi</span>
-              <StatusBadge>
-                {itemStatuses[item.status] ?? item.status}
-              </StatusBadge>
-            </summary>
-            <BusinessFields
-              items={[
-                {
-                  label: "Kích thước (ngang × dài × hông, cm)",
-                  value: [item.bagWidth, item.bagLength, item.bagGusset].some(
-                    (v) => v !== null,
-                  )
-                    ? [item.bagWidth, item.bagLength, item.bagGusset]
-                        .map((v) => v ?? "—")
-                        .join(" × ")
-                    : "",
-                },
-                { label: "Giấy", value: item.paperPreference },
-                { label: "Định lượng giấy", value: item.gsmPreference },
-                { label: "Màu", value: item.colorPreference },
-                { label: "Kỹ thuật", value: item.technicalRequirements },
-                { label: "Thiết kế", value: item.designRequirements },
-                {
-                  label: "Sản xuất",
-                  value: item.requiresProduction
-                    ? item.productionRequirements || "Có yêu cầu"
-                    : "Không yêu cầu",
-                },
-                {
-                  label: "Gia công",
-                  value: item.requiresFinishing
-                    ? item.finishingRequirements || "Có yêu cầu"
-                    : "Không yêu cầu",
-                },
-                { label: "Ghi chú", value: item.note },
-                { label: "Ưu tiên", value: item.isUrgent ? "Khẩn" : "" },
-                {
-                  label: "Mẫu đã lưu",
-                  value:
-                    item.designSnapshot &&
-                    `${item.designSnapshot.productName} · phiên bản ${item.designSnapshot.version}`,
-                },
-                ...(item.designSnapshot
-                  ? [
-                      {
-                        label: "Thông tin mẫu tại thời điểm chọn",
-                        value: [
-                          item.designSnapshot.bagSize,
-                          item.designSnapshot.paperType,
-                          item.designSnapshot.paperGsm,
-                          item.designSnapshot.color,
-                          item.designSnapshot.plateReference,
-                        ]
-                          .filter(Boolean)
-                          .join(" · "),
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </details>
-        ))}
+        {items.map((item) => {
+          const metrics = productProgress.get(item.id);
+          return (
+            <details className="business-line-details" key={item.id}>
+              <summary>
+                <strong>{item.productName}</strong>
+                <span>{localNumber(item.quantity)} túi</span>
+                <StatusBadge>
+                  {itemStatuses[item.status] ?? item.status}
+                </StatusBadge>
+              </summary>
+              {metrics && order.status !== "DRAFT" && (
+                <div className="fulfillment-product-metrics">
+                  <ProductMetrics item={metrics} />
+                </div>
+              )}
+              <BusinessFields
+                items={[
+                  {
+                    label: "Kích thước (ngang × dài × hông, cm)",
+                    value: [item.bagWidth, item.bagLength, item.bagGusset].some(
+                      (v) => v !== null,
+                    )
+                      ? [item.bagWidth, item.bagLength, item.bagGusset]
+                          .map((v) => v ?? "—")
+                          .join(" × ")
+                      : "",
+                  },
+                  { label: "Giấy", value: item.paperPreference },
+                  { label: "Định lượng giấy", value: item.gsmPreference },
+                  { label: "Màu", value: item.colorPreference },
+                  { label: "Kỹ thuật", value: item.technicalRequirements },
+                  { label: "Thiết kế", value: item.designRequirements },
+                  {
+                    label: "Sản xuất",
+                    value: item.requiresProduction
+                      ? item.productionRequirements || "Có yêu cầu"
+                      : "Không yêu cầu",
+                  },
+                  {
+                    label: "Gia công",
+                    value: item.requiresFinishing
+                      ? item.finishingRequirements || "Có yêu cầu"
+                      : "Không yêu cầu",
+                  },
+                  { label: "Ghi chú", value: item.note },
+                  { label: "Ưu tiên", value: item.isUrgent ? "Khẩn" : "" },
+                  {
+                    label: "Mẫu đã lưu",
+                    value:
+                      item.designSnapshot &&
+                      `${item.designSnapshot.productName} · phiên bản ${item.designSnapshot.version}`,
+                  },
+                  ...(item.designSnapshot
+                    ? [
+                        {
+                          label: "Thông tin mẫu tại thời điểm chọn",
+                          value: [
+                            item.designSnapshot.bagSize,
+                            item.designSnapshot.paperType,
+                            item.designSnapshot.paperGsm,
+                            item.designSnapshot.color,
+                            item.designSnapshot.plateReference,
+                          ]
+                            .filter(Boolean)
+                            .join(" · "),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </details>
+          );
+        })}
       </section>
-      {order.status === "CONFIRMED" && (
-        <p className="muted">
-          Đã ghi nhận yêu cầu. Xử lý gia công và kho sẽ có ở Phase 02C.
-        </p>
-      )}
       <div className="business-grid-two">
         <section className="business-subsection">
           <h3>Lịch sử trạng thái</h3>
@@ -597,11 +616,13 @@ function SalesDetails({
               </Button>
             </>
           )}
-          {admin && ["DELIVERED", "COMPLETED"].includes(order.status) && (
-            <Button onClick={() => selectAction("force-reopen")}>
-              Mở lại đơn
-            </Button>
-          )}
+          {admin &&
+            !detail.hasDispatchHistory &&
+            ["DELIVERED", "COMPLETED"].includes(order.status) && (
+              <Button onClick={() => selectAction("force-reopen")}>
+                Mở lại đơn
+              </Button>
+            )}
         </div>
       )}
     </div>

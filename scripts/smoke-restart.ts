@@ -42,6 +42,15 @@ const [production] = await rows(
   "SELECT id FROM production_orders WHERE status='PRINTED' ORDER BY id LIMIT 1",
 );
 assert(production, "Run Phase 02B integration before the restart smoke.");
+const [fulfillment] = await rows(
+  pool,
+  `SELECT s.id AS shipment_id,d.id AS dispatch_id,
+  d.order_id,l.good_id FROM shipments s
+  JOIN warehouse_dispatches d ON d.id=s.dispatch_id
+  JOIN warehouse_dispatch_items l ON l.dispatch_id=d.id
+  WHERE s.status='DELIVERED' ORDER BY d.created_at,l.id LIMIT 1`,
+);
+assert(fulfillment, "Run Phase 02C integration before the restart smoke.");
 const id = randomUUID();
 const username = `restart_${randomBytes(6).toString("hex")}`;
 const password = randomBytes(24).toString("base64url");
@@ -129,6 +138,24 @@ try {
   );
   assert.equal(beforeProduction.status, 200);
   const productionSnapshot = await beforeProduction.json();
+  const fulfillmentPaths = [
+    "/sales-orders/" + fulfillment.order_id + "/progress",
+    "/finished-goods/" + fulfillment.good_id,
+    "/warehouse-dispatches/" + fulfillment.dispatch_id,
+    "/shipments/" + fulfillment.shipment_id,
+  ];
+  async function fulfillmentSnapshot() {
+    return Promise.all(
+      fulfillmentPaths.map(async (path) => {
+        const response = await fetch(origin + "/api" + path, {
+          headers: { Cookie: cookie },
+        });
+        assert.equal(response.status, 200, path);
+        return response.json();
+      }),
+    );
+  }
+  const fulfillmentBefore = await fulfillmentSnapshot();
   await stop();
   await start();
   const me = await fetch(origin + "/api/auth/me", {
@@ -164,10 +191,11 @@ try {
   );
   assert.equal(afterProduction.status, 200);
   assert.deepEqual(await afterProduction.json(), productionSnapshot);
+  assert.deepEqual(await fulfillmentSnapshot(), fulfillmentBefore);
   assert.equal((await fetch(origin + "/server.cjs")).status, 404);
   assert.equal((await fetch(origin + "/build/server.cjs")).status, 404);
   console.log(
-    "PASS compiled Node process restart: session, customer, sales/design and complete production snapshot (allocation, revision, plate, issues, handoff) survive. Backend artifacts stay private.",
+    "PASS compiled Node process restart: session, customer, sales/design and production, accepted stock/movements, whole-order dispatch and shipment snapshots survive. Backend artifacts stay private.",
   );
 } finally {
   await stop();

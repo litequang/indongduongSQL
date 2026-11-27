@@ -64,6 +64,18 @@ export async function resetTestData(
       "UPDATE production_orders SET source_order_id=NULL,run_kind='NORMAL' WHERE source_order_id IS NOT NULL",
     );
     for (const table of [
+      "fulfillment_receipts",
+      "workflow_issues",
+      "inventory_movements",
+      "shipment_returns",
+      "shipment_history",
+      "shipments",
+      "warehouse_dispatch_items",
+      "warehouse_dispatches",
+      "finished_goods",
+      "finished_goods_acceptances",
+      "finishing_task_history",
+      "finishing_tasks",
       "production_finishing_handoffs",
       "production_design_prints",
       "production_action_receipts",
