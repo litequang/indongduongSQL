@@ -7,12 +7,12 @@ export interface PrinterCandidate {
 
 function normalize(value: string): string {
   return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
 
@@ -41,18 +41,31 @@ function editDistanceAtMostOne(left: string, right: string): boolean {
 
 /** Returns a printer only when the text identifies exactly one active printer.
  * A one-character typo is accepted only for a token of at least four chars. */
-export function findUniquePrinterMatch<T extends PrinterCandidate>(text: string, users: T[]): T | undefined {
+export function findUniquePrinterMatch<T extends PrinterCandidate>(
+  text: string,
+  users: T[],
+): T | undefined {
   const normalizedText = ` ${normalize(text)} `;
   const textTokens = normalizedText.trim().split(/\s+/).filter(Boolean);
   const candidates = users.filter((user) => {
-    if (user.role !== 'PRINTER' || user.active === false) return false;
+    if (user.role !== "PRINTER" || user.active === false) return false;
     const normalizedName = normalize(user.name);
     const nameTokens = normalizedName.split(/\s+/).filter(Boolean);
-    const exact = normalizedText.includes(` ${normalizedName} `)
-      || nameTokens.some((token) => token.length >= 3 && normalizedText.includes(` ${token} `));
+    const exact =
+      normalizedText.includes(` ${normalizedName} `) ||
+      nameTokens.some(
+        (token) => token.length >= 3 && normalizedText.includes(` ${token} `),
+      );
     if (exact) return true;
-    return nameTokens.some((nameToken) => nameToken.length >= 4
-      && textTokens.some((textToken) => textToken.length >= 4 && editDistanceAtMostOne(nameToken, textToken)));
+    return nameTokens.some(
+      (nameToken) =>
+        nameToken.length >= 4 &&
+        textTokens.some(
+          (textToken) =>
+            textToken.length >= 4 &&
+            editDistanceAtMostOne(nameToken, textToken),
+        ),
+    );
   });
   return candidates.length === 1 ? candidates[0] : undefined;
 }
