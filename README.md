@@ -23,7 +23,7 @@ Khởi động lại: đảm bảo MariaDB riêng đang chạy, mở thư mục 
 npm run typecheck
 npm run lint
 npm test
-npm run test:legacy
+npm run test:regression
 $env:ALLOW_TEST_DATABASE='1'
 npm run test:integration
 npm run build

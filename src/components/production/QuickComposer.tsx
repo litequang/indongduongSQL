@@ -17,6 +17,8 @@ import { Input } from "../ui/input";
 import { FormField, Message, PageHeader } from "../common";
 import { endpoint, write } from "../business/common";
 import { ImageAttachment } from "../private/ImageAttachment";
+import { createSynchronousSubmissionLock } from "../../../shared/submission-lock";
+import { useAccess } from "../../services/access";
 
 export function seedFromQueue(items: DesignerItem[]): ProductionInput {
   return productionFields.parse({
@@ -124,7 +126,8 @@ export function QuickComposer({
   const [notice, setNotice] = useState("");
   const [parseNotice, setParseNotice] = useState("");
   const [tagsText, setTagsText] = useState(input.tags.join(", "));
-  const lock = useRef(false);
+  const access = useAccess();
+  const lock = useRef(createSynchronousSubmissionLock());
   const createPayload = useRef<ProductionInput | null>(null);
   const dispatchKey = useRef(crypto.randomUUID());
   const sources = useQuery({
@@ -150,8 +153,7 @@ export function QuickComposer({
   };
   const save = useMutation({
     mutationFn: async (send: boolean) => {
-      if (lock.current) return;
-      lock.current = true;
+      if (!lock.current.tryAcquire()) return;
       try {
         const candidate = productionFields.parse({
           ...input,
@@ -227,7 +229,7 @@ export function QuickComposer({
         void client.invalidateQueries({ queryKey: ["production_orders"] });
         void client.invalidateQueries({ queryKey: ["designer_queue"] });
       } finally {
-        lock.current = false;
+        lock.current.release();
       }
     },
   });
@@ -306,7 +308,13 @@ export function QuickComposer({
           save.mutate(false);
         }}
       >
-        <fieldset disabled={save.isPending} className="form-stack">
+        <fieldset
+          disabled={
+            save.isPending ||
+            access.data?.permissions.canCreateProductionOrder !== true
+          }
+          className="form-stack"
+        >
           <legend className="sr-only">Thông tin lệnh</legend>
           <FormField id="prod-title" label="Tên lệnh">
             <Input
@@ -820,12 +828,22 @@ export function QuickComposer({
         {save.error && <Message>{save.error.message}</Message>}
         {notice && <p role="status">{notice}</p>}
         <div className="production-actions">
-          <Button type="submit" disabled={save.isPending}>
+          <Button
+            type="submit"
+            disabled={
+              save.isPending ||
+              access.data?.permissions.canCreateProductionOrder !== true
+            }
+          >
             Lưu nháp
           </Button>
           <Button
             type="button"
-            disabled={save.isPending}
+            disabled={
+              save.isPending ||
+              access.data?.permissions.canCreateProductionOrder !== true ||
+              access.data?.permissions.canDispatchOrder !== true
+            }
             onClick={() => save.mutate(true)}
           >
             Lưu và gửi thợ in

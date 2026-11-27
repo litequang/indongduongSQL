@@ -78,8 +78,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           }
           if (delta.changes.some((event) => event.entity === "sales_orders"))
             void client.invalidateQueries({ queryKey: ["designer_queue"] });
-          if (delta.changes.some((x) => x.entity === "settings"))
+          if (delta.changes.some((x) => x.entity === "settings")) {
             void client.invalidateQueries({ queryKey: ["settings"] });
+            void client.invalidateQueries({ queryKey: ["access"] });
+          }
+          if (delta.changes.some((x) => x.entity === "production_orders"))
+            void client.invalidateQueries({ queryKey: ["reports"] });
         }
       } catch {
         /* Auth errors are handled centrally; queries retain explicit connection/error states. */

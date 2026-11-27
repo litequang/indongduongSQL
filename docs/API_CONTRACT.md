@@ -1,4 +1,6 @@
-# REST API contract — Foundation through Phase 03
+# REST API contract — Foundation through Phase 04
+
+Phase 04 adds authenticated `GET /access`, Developer-only versioned/CSRF `PUT /access` (strict policy, up to 500 user overrides, 512 KiB JSON limit), `GET /reports/production` and `GET /reports/production.csv`. Exact filters, limits, precedence and source reconciliation are in [PHASE_04_PARITY.md](PHASE_04_PARITY.md). User DTO includes nullable `avatarRegistryId`; profile PATCH accepts only a verified registry ID for that exact AVATAR target or null. Image ticket `targetType` also accepts AVATAR. Every endpoint remains no-store and server-authorized.
 
 ## Phase 03 private operations
 

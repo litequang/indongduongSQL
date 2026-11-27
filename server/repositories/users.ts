@@ -2,7 +2,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import type { User } from "../../shared/contracts";
 import { rows, type Db } from "../database/pool";
 export const userColumns =
-  "id,username,name,phone,role_code,machine_assigned,active,version,created_at,updated_at";
+  "id,username,name,phone,role_code,machine_assigned,avatar_registry_id,active,version,created_at,updated_at";
 export function toUser(r: RowDataPacket): User {
   return {
     id: r.id,
@@ -11,6 +11,7 @@ export function toUser(r: RowDataPacket): User {
     phone: r.phone,
     role: r.role_code,
     machineAssigned: r.machine_assigned,
+    avatarRegistryId: r.avatar_registry_id ?? null,
     active: Boolean(r.active),
     version: Number(r.version),
     createdAt: new Date(r.created_at).toISOString(),

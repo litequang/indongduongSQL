@@ -68,6 +68,17 @@ await pool.execute(
 const imageProbe = randomUUID(),
   jobProbe = randomUUID(),
   notificationProbe = randomUUID();
+const [policyBefore] = await rows(
+  pool,
+  "SELECT * FROM access_policy WHERE id=1",
+);
+await pool.execute(
+  "UPDATE access_policy SET version=version+1,features=?,role_overrides=? WHERE id=1",
+  [
+    JSON.stringify({ soundAlerts: false }),
+    JSON.stringify({ SALE: { canExportExcel: false } }),
+  ],
+);
 await pool.execute(
   `INSERT INTO image_registry(id,owner_id,target_type,target_id,object_key,expires_at) VALUES(?,?,'DESIGN',?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 5 MINUTE))`,
   [imageProbe, id, randomUUID(), "images/" + imageProbe],
@@ -187,6 +198,9 @@ try {
     });
     assert.equal(notifications.status, 200);
     const result = {
+      access: await (
+        await fetch(origin + "/api/access", { headers: { Cookie: cookie } })
+      ).json(),
       jobs: await jobs.json(),
       notifications: await notifications.json(),
       registry: await rows(pool, "SELECT * FROM image_registry WHERE id=?", [
@@ -256,5 +270,20 @@ try {
   await pool.execute("DELETE FROM sessions WHERE user_id=?", [id]);
   await pool.execute("DELETE FROM audit_logs WHERE actor_id=?", [id]);
   await pool.execute("DELETE FROM users WHERE id=?", [id]);
+  await pool.execute(
+    "UPDATE access_policy SET version=?,features=?,role_overrides=?,user_overrides=? WHERE id=1",
+    [
+      policyBefore.version,
+      typeof policyBefore.features === "string"
+        ? policyBefore.features
+        : JSON.stringify(policyBefore.features),
+      typeof policyBefore.role_overrides === "string"
+        ? policyBefore.role_overrides
+        : JSON.stringify(policyBefore.role_overrides),
+      typeof policyBefore.user_overrides === "string"
+        ? policyBefore.user_overrides
+        : JSON.stringify(policyBefore.user_overrides),
+    ],
+  );
   await pool.end();
 }

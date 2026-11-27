@@ -124,6 +124,7 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
           assert.deepEqual(applied.flat(), [
             "006_fulfillment.sql",
             "007_private_operations.sql",
+            "008_access_profiles.sql",
           ]);
           const [source] = await rows(
             pool,

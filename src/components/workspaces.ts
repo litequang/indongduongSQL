@@ -1,4 +1,4 @@
-import type { Role } from "../../shared/contracts";
+import { ROLES, type Role } from "../../shared/contracts";
 export interface WorkspaceModule {
   id: string;
   label: string;
@@ -85,7 +85,7 @@ export const MODULES: WorkspaceModule[] = [
     id: "reports",
     label: "Báo cáo",
     description: "Số liệu hoạt động xưởng in và hiệu quả thực hiện đơn hàng.",
-    stage: "02 / 03",
+    stage: "04",
     roles: [...management, "SALE", "DESIGNER"],
   },
   {
@@ -94,6 +94,13 @@ export const MODULES: WorkspaceModule[] = [
     description: "Ảnh riêng tư, quản lý lưu trữ và sao lưu có kiểm chứng.",
     stage: "03",
     roles: ["DEVELOPER"],
+  },
+  {
+    id: "help",
+    label: "Hướng dẫn sử dụng",
+    description: "Quy trình và trợ giúp cho từng vai trò.",
+    stage: "04",
+    roles: ROLES,
   },
 ];
 export const WORKSPACE: Record<
@@ -154,4 +161,6 @@ export const isBusinessAvailable = (id: string) =>
     "warehouse",
     "shipping",
     "storage",
+    "reports",
+    "help",
   ].includes(id);

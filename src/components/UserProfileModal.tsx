@@ -1,3 +1,4 @@
+import { Avatar } from "./private/Avatar";
 import { scrollToSection } from "./common";
 import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { userRepository } from "../repositories/userRepository";
 import { api, json } from "../services/api";
 import { Button } from "./ui/button";
+import { ImageAttachment } from "./private/ImageAttachment";
 import { PageHeader, FormField, Message, ConfirmDialog } from "./common";
 export function UserProfileModal() {
   const { user, refresh } = useAuth();
@@ -16,6 +18,7 @@ export function UserProfileModal() {
     phone: user!.phone,
     machineAssigned: user!.machineAssigned,
     version: user!.version,
+    avatarRegistryId: user!.avatarRegistryId,
   });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -32,6 +35,7 @@ export function UserProfileModal() {
         phone: result.user.phone,
         machineAssigned: result.user.machineAssigned,
         version: result.user.version,
+        avatarRegistryId: result.user.avatarRegistryId,
       });
       await refresh();
       await client.invalidateQueries({ queryKey: ["users"] });
@@ -70,9 +74,7 @@ export function UserProfileModal() {
             </div>
             <form className="stack-form" onSubmit={save}>
               <div className="profile-inline">
-                <span className="avatar avatar-large">
-                  {user!.name.slice(0, 1)}
-                </span>
+                <Avatar user={user!} large />
                 <div>
                   <strong>{user!.name}</strong>
                   <p>
@@ -98,6 +100,15 @@ export function UserProfileModal() {
                   maxLength={30}
                 />
               </div>
+              <ImageAttachment
+                targetType="AVATAR"
+                targetId={user!.id}
+                slot="avatar"
+                value={form.avatarRegistryId}
+                onChange={(avatarRegistryId) =>
+                  setForm({ ...form, avatarRegistryId })
+                }
+              />
               <FormField
                 id="profile-machine"
                 label="Máy phụ trách"

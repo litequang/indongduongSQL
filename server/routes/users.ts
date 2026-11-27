@@ -19,6 +19,7 @@ import { hashPassword } from "../auth/password";
 import { passwordWork } from "../auth/rate-limit";
 import { getUser, userColumns, toUser } from "../repositories/users";
 import { audit, changed } from "../services/audit";
+import { validateImageLink } from "../storage/registry";
 export function registerUserRoutes(app: Express, pool: Pool, config: Config) {
   const { readSession, mutation } = routeContext(pool, config);
   app.get(
@@ -119,6 +120,14 @@ export function registerUserRoutes(app: Express, pool: Pool, config: Config) {
         else allowed(canManageTarget(s.user.role, target.role));
         if (input.role) allowed(canManageTarget(s.user.role, input.role));
         fresh(target.version, input.version);
+        if (input.avatarRegistryId)
+          await validateImageLink(
+            db,
+            input.avatarRegistryId,
+            "AVATAR",
+            id,
+            s.user.id,
+          );
         if (
           target.role === "DEVELOPER" &&
           target.active &&
@@ -136,13 +145,16 @@ export function registerUserRoutes(app: Express, pool: Pool, config: Config) {
             );
         }
         await db.execute(
-          "UPDATE users SET name=?,phone=?,role_code=?,machine_assigned=?,active=?,version=version+1,updated_at=UTC_TIMESTAMP(3) WHERE id=?",
+          "UPDATE users SET name=?,phone=?,role_code=?,machine_assigned=?,active=?,avatar_registry_id=?,version=version+1,updated_at=UTC_TIMESTAMP(3) WHERE id=?",
           [
             input.name ?? target.name,
             input.phone ?? target.phone,
             input.role ?? target.role,
             input.machineAssigned ?? target.machineAssigned,
             input.active ?? target.active,
+            input.avatarRegistryId === undefined
+              ? target.avatarRegistryId
+              : input.avatarRegistryId,
             id,
           ],
         );

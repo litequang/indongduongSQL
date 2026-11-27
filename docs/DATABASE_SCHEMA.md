@@ -1,5 +1,7 @@
 # Database schema
 
+Phase 04 migration **008_access_profiles.sql** adds a singleton versioned JSON `access_policy` (bounded/strict at API), extends image target enum with AVATAR, adds nullable `users.avatar_registry_id` FK and `production_orders(created_at,status,id)` report index. Cleanup/reference checks include avatars. Migrations 001–007 retain published checksums. [PHASE_04_PARITY.md](PHASE_04_PARITY.md) describes reporting and access semantics; the historical design diagram below is not an assertion that planned replica tables exist.
+
 ## Phase 03 — migration 007
 
 `007_private_operations.sql` follows unchanged 001–006. `image_registry` records owner, fixed DESIGN/PRODUCTION target, STAGED/ACTIVE/DELETED state, immutable private key, expiry, detected MIME/size/dimensions/SHA-256. It removes earlier inline NULL-only column checks using MODIFY COLUMN and adds registry FKs on design_versions/production_print_images. `image_backup_jobs` owns actor/mode/time; `image_backup_items` stores bounded ID snapshots, durable outcome/message/attempt count. `notifications` has per-user commit sequence uniqueness, entity reference, read timestamp and a bounded private-history index. Credentials and binary bytes never enter SQL.

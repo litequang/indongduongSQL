@@ -158,7 +158,7 @@ export function registerPrivateOperations(
       const input = z
         .object({
           id: idSchema,
-          targetType: z.enum(["DESIGN", "PRODUCTION"]),
+          targetType: z.enum(["DESIGN", "PRODUCTION", "AVATAR"]),
           targetId: idSchema,
         })
         .strict()
@@ -190,7 +190,7 @@ export function registerPrivateOperations(
         }
         const [count] = await rows(
           db,
-          `SELECT COUNT(*) AS n FROM image_registry r WHERE owner_id=? AND status<>'DELETED' AND NOT EXISTS(SELECT 1 FROM design_versions v WHERE v.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM production_print_images i WHERE i.image_registry_id=r.id)`,
+          `SELECT COUNT(*) AS n FROM image_registry r WHERE owner_id=? AND status<>'DELETED' AND NOT EXISTS(SELECT 1 FROM design_versions v WHERE v.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM production_print_images i WHERE i.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM users u WHERE u.avatar_registry_id=r.id)`,
           [s.user.id],
         );
         if (Number(count.n) >= 100)
@@ -254,8 +254,8 @@ export function registerPrivateOperations(
         );
         const [linked] = await rows(
           db,
-          "SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? LIMIT 1",
-          [image.id, image.id],
+          "SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? UNION ALL SELECT id FROM users WHERE avatar_registry_id=? LIMIT 1",
+          [image.id, image.id, image.id],
         );
         if (linked)
           throw new ApiError(
@@ -383,7 +383,7 @@ export function registerPrivateOperations(
         storage();
         const expired = await rows(
           db,
-          `SELECT r.id,r.object_key FROM image_registry r WHERE (r.status='DELETED' AND r.object_key NOT LIKE 'retired/%') OR (r.status<>'DELETED' AND r.created_at<DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 1 DAY) AND NOT EXISTS(SELECT 1 FROM design_versions v WHERE v.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM production_print_images p WHERE p.image_registry_id=r.id)) ORDER BY r.created_at LIMIT 10`,
+          `SELECT r.id,r.object_key FROM image_registry r WHERE (r.status='DELETED' AND r.object_key NOT LIKE 'retired/%') OR (r.status<>'DELETED' AND r.created_at<DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 1 DAY) AND NOT EXISTS(SELECT 1 FROM design_versions v WHERE v.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM production_print_images p WHERE p.image_registry_id=r.id) AND NOT EXISTS(SELECT 1 FROM users u WHERE u.avatar_registry_id=r.id)) ORDER BY r.created_at LIMIT 10`,
         );
         for (const image of expired)
           await db.execute(

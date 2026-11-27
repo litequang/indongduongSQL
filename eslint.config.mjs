@@ -4,7 +4,6 @@ import globals from "globals";
 export default tseslint.config(
   {
     ignores: [
-      "legacy/**",
       "dist/**",
       "build/**",
       "node_modules/**",

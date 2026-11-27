@@ -56,6 +56,8 @@ export async function resetTestData(
   const db = await pool.getConnection();
   try {
     await db.beginTransaction();
+    await db.query("UPDATE users SET avatar_registry_id=NULL");
+    await db.query("UPDATE access_policy SET version=1,features='{}',role_overrides='{}',user_overrides='{}' WHERE id=1");
     // Self references are cleared only inside this guarded synthetic-test reset.
     await db.query(
       "UPDATE production_allocations SET source_allocation_id=NULL,kind='OUTPUT',quantity=GREATEST(quantity,1) WHERE source_allocation_id IS NOT NULL",

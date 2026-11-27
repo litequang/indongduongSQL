@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
+import { useAccess } from "../../services/access";
 import { Button } from "../ui/button";
 import { ErrorState, LoadingSkeleton, ResponsiveDialog } from "../common";
 type Notification = {
@@ -25,6 +26,8 @@ export function NotificationCenter({
   onOpenChange: (v: boolean) => void;
 }) {
   const { user } = useAuth();
+  const access = useAccess();
+  const soundEnabled = access.data?.features.soundAlerts === true;
   const [sound, setSound] = useState(() => {
     try {
       return localStorage.getItem("idd.ui.notificationSound") === "1";
@@ -55,7 +58,7 @@ export function NotificationCenter({
       BigInt(id) > BigInt(latest.current) &&
       !document.hidden
     ) {
-      if (sound && audio.current?.state === "running") {
+      if (soundEnabled && sound && audio.current?.state === "running") {
         const oscillator = audio.current.createOscillator();
         const gain = audio.current.createGain();
         gain.gain.value = 0.05;
@@ -64,7 +67,7 @@ export function NotificationCenter({
         oscillator.start();
         oscillator.stop(audio.current.currentTime + 0.15);
       }
-      if (voice && "speechSynthesis" in window) {
+      if (soundEnabled && voice && "speechSynthesis" in window) {
         const utterance = new SpeechSynthesisUtterance(
           "Bạn có cập nhật công việc mới",
         );
@@ -74,7 +77,7 @@ export function NotificationCenter({
       }
     }
     if (id) latest.current = id;
-  }, [recent.data, sound, voice]);
+  }, [recent.data, sound, voice, soundEnabled]);
   useEffect(
     () => () => {
       void audio.current?.close();

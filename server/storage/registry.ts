@@ -1,4 +1,6 @@
-import type { User } from "../../shared/contracts";
+import { canManageTarget, type User } from "../../shared/contracts";
+import { getUser } from "../repositories/users";
+import { requireCapability, requireFeature } from "../services/access";
 import { canManageDesigns } from "../../shared/business";
 import { canComposeProduction } from "../../shared/production";
 import { rows, type Db } from "../database/pool";
@@ -11,8 +13,20 @@ export async function targetAuthority(
   actor: User,
   write: boolean,
 ) {
+  if (type === "AVATAR") {
+    const target = await getUser(db, id);
+    if (!target) return false;
+    if (write && actor.id !== id) {
+      allowed(canManageTarget(actor.role, target.role));
+      await requireCapability(db, actor, "canManageUsers");
+    }
+    return true;
+  }
   if (type === "DESIGN") {
-    if (write) allowed(canManageDesigns(actor.role));
+    if (write) {
+      allowed(canManageDesigns(actor.role));
+      await requireFeature(db, "sampleLibrary");
+    }
     const [design] = await rows(db, "SELECT id FROM saved_designs WHERE id=?", [
       id,
     ]);
@@ -27,6 +41,7 @@ export async function targetAuthority(
   if (!order) {
     if (write) {
       allowed(canComposeProduction(actor.role));
+      await requireCapability(db, actor, "canCreateProductionOrder");
       return true;
     }
     return false;
@@ -39,6 +54,7 @@ export async function targetAuthority(
     return false;
   if (write) {
     allowed(canComposeProduction(actor.role));
+    await requireCapability(db, actor, "canCreateProductionOrder");
     if (order.status !== "DRAFT" || order.created_by !== actor.id) return false;
   }
   return true;
@@ -59,8 +75,8 @@ export async function registryImage(
     throw new ApiError(404, "NOT_FOUND", "Không tìm thấy ảnh.");
   const [linked] = await rows(
     db,
-    `SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? LIMIT 1`,
-    [id, id],
+    `SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? UNION ALL SELECT id FROM users WHERE avatar_registry_id=? LIMIT 1`,
+    [id, id, id],
   );
   if (!linked && image.owner_id !== actor.id)
     throw new ApiError(404, "NOT_FOUND", "Không tìm thấy ảnh.");
@@ -91,8 +107,8 @@ export async function validateImageLink(
   // Existing references can be reused by authorized editors; unattached uploads remain owner private.
   const [linked] = await rows(
     db,
-    "SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? LIMIT 1",
-    [id, id],
+    "SELECT id FROM design_versions WHERE image_registry_id=? UNION ALL SELECT id FROM production_print_images WHERE image_registry_id=? UNION ALL SELECT id FROM users WHERE avatar_registry_id=? LIMIT 1",
+    [id, id, id],
   );
   if (!linked && image.owner_id !== actor)
     throw new ApiError(403, "FORBIDDEN", "Ảnh thuộc người dùng khác.");

@@ -1,4 +1,4 @@
-name: SQL Foundation through Phase 03 CI
+name: SQL Foundation through Phase 04 CI
 on:
   push:
     branches: [main, codex/sql-foundation, "task/**", "codex/**"]
@@ -46,8 +46,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      - run: npm run test:legacy
-      - name: Real MariaDB migrations, Foundation through Phase 03 API
+      - run: npm run test:regression
+      - name: Real MariaDB migrations, Foundation through Phase 04 API
         run: npm run test:integration
       - run: npm run build
       - run: npm run check:runtime
@@ -55,7 +55,7 @@ jobs:
         run: npm run test:restart
       - run: npx playwright install --with-deps chromium
       # Dedicated test fixtures are reset only inside the guarded _test database.
-      - name: Foundation through Phase 03 Playwright suites
+      - name: Foundation through Phase 04 Playwright suites
         run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()

@@ -4,6 +4,7 @@ import type { Config } from "../config";
 import { transaction, lockState } from "../database/pool";
 import { sessionFor, requireCsrf, type Session } from "./session";
 import { consumeLimit } from "./rate-limit";
+import { enforceRequestPolicy } from "../services/access";
 export function routeContext(pool: Pool, config: Config) {
   const readSession = (req: Request) => sessionFor(pool, req, config);
   const mutation = async <T>(
@@ -14,6 +15,7 @@ export function routeContext(pool: Pool, config: Config) {
       await lockState(db);
       const s = await sessionFor(db, req, config);
       requireCsrf(req, s);
+      await enforceRequestPolicy(db, req, s.user);
       return run(db, s);
     });
   const limited = (req: Request, scope: string, maximum: number) =>

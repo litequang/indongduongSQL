@@ -1,3 +1,4 @@
+import { Avatar } from "./private/Avatar";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   LayoutDashboard,
@@ -22,6 +23,7 @@ import {
   Layers3,
   BookUser,
   HardDrive,
+  BookOpen,
   Command,
   ArrowRight,
 } from "lucide-react";
@@ -60,6 +62,7 @@ const ICONS: Record<string, typeof Users> = {
   shipping: Truck,
   reports: ChartNoAxesCombined,
   storage: HardDrive,
+  help: BookOpen,
 };
 function preference(key: string, fallback: string) {
   try {
@@ -279,9 +282,7 @@ export function AppShell({
               className="account-link"
               aria-label="Mở hồ sơ cá nhân"
             >
-              <span className="avatar avatar-small">
-                {user!.name.slice(0, 1)}
-              </span>
+              <Avatar user={user!} small />
               <span>
                 <strong>{user!.name}</strong>
                 <small>{ROLE_LABELS[user!.role]}</small>

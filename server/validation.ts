@@ -43,6 +43,7 @@ export const updateUserSchema = z
     phone: text(30).optional(),
     role: z.enum(ROLES).optional(),
     machineAssigned: text(100).optional(),
+    avatarRegistryId: z.string().uuid().nullable().optional(),
     active: z.boolean().optional(),
   })
   .strict()

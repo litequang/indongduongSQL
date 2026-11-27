@@ -1,6 +1,0 @@
-{
-  "projectId": "your-firebase-project-id",
-  "hostingSite": "your-hosting-site-id",
-  "hostingTarget": "production",
-  "productionUrl": "https://your-hosting-site-id.web.app"
-}

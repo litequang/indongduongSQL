@@ -15,6 +15,7 @@ export async function api<T>(
   url: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const requestSessionToken = csrfToken;
   const mutation = !!options.method && options.method !== "GET";
   const response = await fetch(`/api${url}`, {
     ...options,
@@ -40,7 +41,13 @@ export async function api<T>(
     },
   }));
   if (!response.ok) {
-    if (response.status === 401 && url !== "/auth/login" && url !== "/auth/me")
+    if (
+      response.status === 401 &&
+      requestSessionToken &&
+      requestSessionToken === csrfToken &&
+      url !== "/auth/login" &&
+      url !== "/auth/me"
+    )
       window.dispatchEvent(new Event("idd-session-expired"));
     throw new ApiError(
       response.status,

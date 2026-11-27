@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Clock3, ShieldCheck } from "lucide-react";
 import { useAuth } from "./context/AuthContext";
@@ -31,6 +31,12 @@ import { seedFromQueue } from "./components/production/QuickComposer";
 import { Finishing } from "./components/fulfillment/Finishing";
 import { Logistics } from "./components/fulfillment/Logistics";
 import { Storage } from "./components/private/Storage";
+const Reports = lazy(() =>
+  import("./components/Reports").then((m) => ({ default: m.Reports })),
+);
+import { useAccess } from "./services/access";
+import { FEATURES, type Feature } from "../shared/access";
+import { UserGuide } from "./components/UserGuide";
 export default function App() {
   const auth = useAuth();
   const setup = useQuery({
@@ -78,6 +84,14 @@ function Workspace() {
     (module) => module.id === page && module.roles.includes(user!.role),
   );
   const { error, loading, refresh } = useConfig();
+  const access = useAccess();
+  const moduleFeature: Record<string, Feature> = {
+    customers: "customer",
+    sales: "salesOrder",
+    design: "sampleLibrary",
+    warehouse: "warehouseDispatch",
+    shipping: "shipping",
+  };
   useEffect(() => {
     const update = () => {
       setRoute(location.hash.slice(1) || "home");
@@ -88,6 +102,13 @@ function Workspace() {
   }, []);
   return (
     <AppShell page={page}>
+      {moduleFeature[page] &&
+        access.data?.features[moduleFeature[page]] === false && (
+          <Message>
+            Phân hệ {FEATURES[moduleFeature[page]]} đang tạm dừng thao tác ghi.
+            Bạn vẫn có thể tra cứu lịch sử.
+          </Message>
+        )}
       {error ? (
         <ErrorState error={error} retry={() => void refresh()} />
       ) : loading ? (
@@ -104,6 +125,12 @@ function Workspace() {
         <AuditPage />
       ) : page === "storage" ? (
         <Storage />
+      ) : page === "reports" && showBusiness ? (
+        <Suspense fallback={<LoadingSkeleton />}>
+          <Reports />
+        </Suspense>
+      ) : page === "help" ? (
+        <UserGuide />
       ) : page === "customers" && showBusiness ? (
         <Customers />
       ) : page === "sales" && showBusiness ? (

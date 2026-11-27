@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-11-27 — Phase 04 parity, permissions and reference retirement
+
+The owner authorized the next task after local Phase 03. PC Phase 04 is based on `aacd3fb` / tested `9231886`; live R2 remains pending by the owner's explicit local-testing choice. Source review and replacement regression coverage permit removing the 211-file Firebase reference; its immutable target tree and provenance remain in Git history and PHASE_04_PARITY.md. SQL regressions replace the old runner; Firebase demo identity and localStorage-authoritative drafts are deliberately retired.
+
+Custom permissions can restrict or re-enable actions only within current SQL role ceilings. Individual overrides precede role overrides, but never bypass assigned specialist/object/workflow checks. Policy administration stays fixed Developer-only to avoid lockout, and changes to effective permissions revoke affected sessions. Optional module switches stop writes and preserve authorized history; production and product finishing stay core. There are no purge-all or impersonation APIs.
+
+Reports use Vietnam creation-day windows, real SQL aggregates without product/image fanout, separate planned/recorded actual/spoilage sheets, capped CSV rather than a mislabeled Excel file, and protected untrusted formula cells. Recharts now renders real data. Avatars use verified private registry targets with the same object lifecycle, not external or data URLs. Unresolved stock/replacement/returns/identity/retention decisions remain open; no Phase 05 deployment is authorized by this implementation task.
+
 ## 2026-11-27 — Phase 03 local authorization and private operations
 
 After Cloud 02C handoff `5d5af17`, the owner instructed PC to continue the next phase and push a handoff, then explicitly chose local implementation/testing with real R2 dev acceptance pending. PC uses `codex/phase-03-private-operations`; main/PRs are not merged. Phase 04 and deployment remain outside this task.

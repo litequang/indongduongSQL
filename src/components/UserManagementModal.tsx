@@ -1,3 +1,5 @@
+import { Avatar } from "./private/Avatar";
+import { useAccess } from "../services/access";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -89,7 +91,11 @@ export function UserManagementModal() {
     enabled: !!actor,
   });
   const detail = list.data?.items.find((x) => x.id === detailId);
-  const manage = !!actor && canManageUsers(actor.role);
+  const access = useAccess();
+  const manage =
+    !!actor &&
+    canManageUsers(actor.role) &&
+    access.data?.permissions.canManageUsers === true;
   const columns = useMemo<ColumnDef<User, any>[]>(
     () => [
       {
@@ -101,9 +107,7 @@ export function UserManagementModal() {
             className="user-cell"
             onClick={() => setDetailId(row.original.id)}
           >
-            <span className="avatar">
-              {row.original.name.slice(0, 1).toUpperCase()}
-            </span>
+            <Avatar user={row.original} />
             <span>
               <strong>{row.original.name}</strong>
               <small>@{row.original.username}</small>
@@ -309,7 +313,7 @@ export function UserManagementModal() {
             </dl>
             {actor &&
               (detail.id === actor.id ||
-                canManageTarget(actor.role, detail.role)) && (
+                (manage && canManageTarget(actor.role, detail.role))) && (
                 <div className="detail-actions">
                   <Button variant="outline" onClick={() => setDialog(detail)}>
                     Chỉnh sửa hồ sơ

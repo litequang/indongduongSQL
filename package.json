@@ -21,10 +21,11 @@
     "test": "tsx --test tests/unit/*.test.ts",
     "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
     "test:e2e": "playwright test",
-    "test:legacy": "tsx --test legacy/firebase/tests/auth-initialization-state.test.ts legacy/firebase/tests/developer-demo-preview.test.ts legacy/firebase/tests/production-eligibility.test.ts legacy/firebase/tests/submission-lock.test.ts legacy/firebase/tests/workflow-v2-local.test.ts",
+    "test:legacy": "npm run test:regression",
     "check:runtime": "node scripts/check-runtime.mjs",
     "test:restart": "tsx --test tests/integration/phase-02c.test.ts && tsx scripts/smoke-restart.ts",
-    "test:r2-dev": "tsx scripts/smoke-r2-dev.ts"
+    "test:r2-dev": "tsx scripts/smoke-r2-dev.ts",
+    "test:regression": "tsx --test tests/regression/*.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1178.0",

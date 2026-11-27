@@ -7,6 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
 import { settingsRepository } from "../repositories/settingsRepository";
 import { Button } from "./ui/button";
+import { AccessSettings } from "./AccessSettings";
+import { useAccess } from "../services/access";
 import {
   PageHeader,
   FormField,
@@ -30,18 +32,22 @@ export function SettingsModal() {
       ) : (
         settings && <SettingsEditor initial={settings} />
       )}
+      <AccessSettings />
     </>
   );
 }
 function SettingsEditor({ initial }: { initial: Settings }) {
   const { user } = useAuth();
+  const access = useAccess();
   const { settings: remote } = useConfig();
   const client = useQueryClient();
   const [form, setForm] = useState(initial);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const editable = canManageSettings(user!.role);
+  const editable =
+    canManageSettings(user!.role) &&
+    access.data?.permissions.canManageWorkshopSettings === true;
   const field = (key: keyof Settings) => ({
     value: form[key] as string | number,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) =>

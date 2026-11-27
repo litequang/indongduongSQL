@@ -56,7 +56,7 @@ export function ImageAttachment({
   value,
   onChange,
 }: {
-  targetType: "DESIGN" | "PRODUCTION";
+  targetType: "DESIGN" | "PRODUCTION" | "AVATAR";
   targetId: string;
   slot: string;
   value?: string | null;

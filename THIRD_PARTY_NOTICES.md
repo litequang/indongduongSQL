@@ -12,7 +12,7 @@ Phase 03 additions audited 2026-11-27: [AWS SDK JS v3](https://github.com/aws/aw
 | [shadcndashboard/shadcndashboard](https://github.com/shadcndashboard/shadcndashboard) | `a9fecfad7d4cf440769255b6c99f38f8c0671b71` | [MIT](docs/licenses/shadcndashboard-shadcndashboard.txt) | Dashboard/table UX reference; Base UI implementation not imported |
 | [TanStack/table](https://github.com/TanStack/table) | `6d48b56fa6391526b9e38214e13b46e90d5e9501` | [MIT](docs/licenses/TanStack-table.txt) | Installed React Table v8; controlled server data tables |
 | [TanStack/query](https://github.com/TanStack/query) | `18b1aded329058c074cda6b1c1a08aba73fdc914` | [MIT](docs/licenses/TanStack-query.txt) | Installed React Query v5; in-memory private server state |
-| [recharts/recharts](https://github.com/recharts/recharts) | `47b54cdf852e5976871a55a373b38ec8b722436a` | [MIT](docs/licenses/recharts-recharts.txt) | Installed for later real reporting; not imported into Phase 01 runtime |
+| [recharts/recharts](https://github.com/recharts/recharts) | `47b54cdf852e5976871a55a373b38ec8b722436a` | [MIT](docs/licenses/recharts-recharts.txt) | Locked 3.11.1 used for Phase 04 real SQL production charts; official [API](https://recharts.github.io/en-US/api/) ResponsiveContainer/BarChart/Bar patterns, own report UI; license retained |
 | [lucide-icons/lucide](https://github.com/lucide-icons/lucide) | `9fcde889d8ed0c6f739cff76e086c27e072e83ec` | [ISC + MIT (Feather-derived icons)](docs/licenses/lucide-icons-lucide.txt) | Installed Lucide React icons; ISC and Feather-derived MIT notices retained |
 
 ## Locked direct dependencies

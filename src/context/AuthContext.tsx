@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   useEffect(() => {
     const expired = () => {
+      if (client.getQueryData(["session"]) === null) return;
       setCsrfToken("");
       client.clear();
       client.setQueryData(["session"], null);

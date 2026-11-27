@@ -51,6 +51,12 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            if (
+              /recharts|d3-|victory-vendor|@reduxjs|react-redux|redux|reselect|immer|decimal\.js-light|tiny-invariant|eventemitter3/.test(
+                id,
+              )
+            )
+              return "charts";
             if (id.includes("@tanstack")) return "query-table";
             if (id.includes("radix-ui") || id.includes("@radix-ui"))
               return "ui-primitives";

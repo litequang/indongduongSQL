@@ -1,3 +1,11 @@
+# Phase 04 writer claim — PC, 2026-11-27
+
+Owner's next-task request authorizes Phase 04 on `codex/phase-04-parity-cleanup`, based on `aacd3fb` / tested Phase 03 code `9231886`. One PC writer; no Cloud writer or main merge. Reports, bounded permission overrides/features, private avatars and source retirement are in progress. Final executed checkpoint/evidence will replace this claim. Deployment and pending owner business policies remain outside this task. Dedicated R2 dev buckets remain unavailable by owner's answer; local fixtures only.
+
+---
+
+Historical preceding handoff follows; the Phase 04 final tested checkpoint will replace this in the handoff commit.
+
 # Bàn giao PC / Cloud
 
 PC, 27/11/2026. Nhánh **codex/phase-03-private-operations**, base Cloud 02C **5d5af17c26ad08fc844ece0c1a6f22e00692248e**. Code Cloud đã test `ddf3e88f415a7df0a499bb011c3a2a1b0ef56a95`. Checkpoint code PC **9231886544ec92415e7d9b8dce36f070a76c2489** đã push; commit bàn giao tài liệu đi sau SHA code bất biến này. PC là writer duy nhất, không dùng agent song song và giải phóng ownership sau commit bàn giao. Không merge main/PR #1/#2, không sửa repo Firebase gốc/Thờ Phượng Pro, không deploy.

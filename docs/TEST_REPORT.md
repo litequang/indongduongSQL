@@ -1,5 +1,7 @@
 # Test evidence index
 
+- [Phase 04 PC verification](PHASE_04_TEST_REPORT.md): reports/CSV, role/user controls/features, avatar lifecycle, 54/54 real MariaDB/API plus final focused 8/8, final Phase 04 browser 5/5, inherited browser flows, fresh/upgrade 001–008, all-54-table MariaDB restart, compiled process/policy persistence, source retirement and secret/runtime checks. Remote CI is recorded by the following handoff checkpoint. Live R2, devices and hosting remain pending.
+
 - [Phase 03 PC verification](PHASE_03_TEST_REPORT.md): 02C acceptance on Windows, migration 007 fresh/upgrade/concurrency, real MariaDB/API, actual image bytes and local S3 protocol, device Blob/F5/logout, image backup/verify/missing-only restore and recipient notifications. Dedicated live R2 remains LOCAL_VALIDATION_REQUIRED by the owner's explicit local-testing choice.
 
   [Phase 03 CI 45964530282](https://github.com/litequang/indongduongSQL/actions/runs/45964530282) completed success at immutable code `9231886544ec92415e7d9b8dce36f070a76c2489`: API 46/46, Playwright 19/19, unit/legacy/build/runtime/restart and evidence upload. The following handoff is documentation only.

@@ -40,6 +40,7 @@ const ACTION_LABELS: Record<string, string> = {
   PASSWORD_RESET: "Đặt lại mật khẩu",
   SESSIONS_REVOKED: "Thu hồi phiên đăng nhập",
   SETTINGS_UPDATED: "Cập nhật cài đặt",
+  ACCESS_POLICY_UPDATED: "Cập nhật quyền và phân hệ",
 };
 export const displayAction = (action: string) =>
   ACTION_LABELS[action] ?? action;

@@ -11,6 +11,8 @@ import { requireOrigin } from "./auth/session";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerUserRoutes } from "./routes/users";
 import { registerSettingsRoutes } from "./routes/settings";
+import { registerAccessRoutes } from "./routes/access";
+import { registerReportRoutes } from "./routes/reports";
 import { registerBusinessRoutes } from "./routes/business";
 import { registerProductionRoutes } from "./routes/production";
 import { registerFulfillmentRoutes } from "./routes/fulfillment";
@@ -73,6 +75,7 @@ export async function createApp(
         /^\/(?:sales-orders\/?$|shipments\/[^/]+\/inspect-return\/?$|production-orders\/?$|customer-imports\/[^/]+\/rows\/?$)/i.test(
           req.path,
         )) ||
+      (req.method === "PUT" && /^\/access\/?$/i.test(req.path)) ||
       (req.method === "PATCH" &&
         /^\/(?:sales-orders|production-orders)\/[^/]+\/?$/i.test(req.path));
     if (!largeBusinessRequest) return standardJson(req, res, next);
@@ -99,6 +102,8 @@ export async function createApp(
   await registerAuthRoutes(app, pool, config);
   registerUserRoutes(app, pool, config);
   registerSettingsRoutes(app, pool, config);
+  registerAccessRoutes(app, pool, config);
+  registerReportRoutes(app, pool, config);
   registerBusinessRoutes(app, pool, config);
   registerProductionRoutes(app, pool, config);
   registerFulfillmentRoutes(app, pool, config);
