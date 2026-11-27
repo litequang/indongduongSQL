@@ -1,3 +1,4 @@
+import { ProgressPanel } from "../fulfillment/Progress";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -51,6 +52,7 @@ type Detail = {
   items: SalesItem[];
   history: SalesHistory[];
   activity: AuditEntry[];
+  hasDispatchHistory: boolean;
 };
 type OrderAction = "confirm" | "cancel" | "force-reopen";
 const actionText: Record<OrderAction, { title: string; description: string }> =
@@ -441,6 +443,7 @@ function SalesDetails({
           { label: "Ghi chú nội bộ", value: order.internalNote },
         ]}
       />
+      <ProgressPanel orderId={order.id} />
       <section className="business-subsection">
         <h3>Sản phẩm ({items.length})</h3>
         {items.length === 0 && <p className="muted">Đơn chưa có sản phẩm.</p>}
@@ -597,11 +600,13 @@ function SalesDetails({
               </Button>
             </>
           )}
-          {admin && ["DELIVERED", "COMPLETED"].includes(order.status) && (
-            <Button onClick={() => selectAction("force-reopen")}>
-              Mở lại đơn
-            </Button>
-          )}
+          {admin &&
+            !detail.hasDispatchHistory &&
+            ["DELIVERED", "COMPLETED"].includes(order.status) && (
+              <Button onClick={() => selectAction("force-reopen")}>
+                Mở lại đơn
+              </Button>
+            )}
         </div>
       )}
     </div>

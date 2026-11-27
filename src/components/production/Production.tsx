@@ -1,3 +1,4 @@
+import { LABELS as FULFILLMENT_LABELS } from "../fulfillment/common";
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Page } from "../../../shared/contracts";
@@ -162,8 +163,8 @@ export function Production({
                 </p>
                 <p>{o.printedNote}</p>
                 <Message>
-                  Đã in xong; đang chờ phân hệ gia công Phase 02C. Chưa tạo tồn
-                  kho hoặc xác nhận giao hàng.
+                  Đã in xong. Xem trạng thái từng bàn giao bên dưới. Nghiệm thu
+                  thành phẩm mới ghi tăng tồn kho.
                 </Message>
               </>
             )}
@@ -240,7 +241,11 @@ export function Production({
               {h.requiresFinishing
                 ? "Cần gia công"
                 : "Cần xác nhận không gia công"}{" "}
-              · chờ Phase 02C
+              {!h.superseded &&
+                " · " +
+                  (h.inspected
+                    ? "Đã nghiệm thu"
+                    : FULFILLMENT_LABELS[h.taskStatus ?? "PENDING_RECEIPT"])}
               {h.replacement
                 ? " · Sản lượng thay thế, cần đối soát nghiệm thu"
                 : ""}

@@ -28,6 +28,8 @@ import type { ProductionInput } from "../shared/production";
 import { Production } from "./components/production/Production";
 import { DesignerQueue } from "./components/production/DesignerQueue";
 import { seedFromQueue } from "./components/production/QuickComposer";
+import { Finishing } from "./components/fulfillment/Finishing";
+import { Logistics } from "./components/fulfillment/Logistics";
 export default function App() {
   const auth = useAuth();
   const setup = useQuery({
@@ -128,6 +130,10 @@ function Workspace() {
               : undefined
           }
         />
+      ) : page === "finishing" && showBusiness ? (
+        <Finishing />
+      ) : (page === "warehouse" || page === "shipping") && showBusiness ? (
+        <Logistics key={page} shipping={page === "shipping"} />
       ) : (
         <UnavailableModule id={page} />
       )}

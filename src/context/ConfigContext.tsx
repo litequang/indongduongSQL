@@ -63,9 +63,17 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
             "sales_orders",
             "saved_designs",
             "production_orders",
+            "fulfillment",
           ]) {
             if (delta.changes.some((event) => event.entity === entity))
               void client.invalidateQueries({ queryKey: [entity] });
+          }
+          if (delta.changes.some((event) => event.entity === "fulfillment"))
+            void client.invalidateQueries({ queryKey: ["production_orders"] });
+          if (delta.changes.some((event) => event.entity === "sales_orders")) {
+            void client.invalidateQueries({
+              queryKey: ["fulfillment", "dispatch-queue"],
+            });
           }
           if (delta.changes.some((event) => event.entity === "sales_orders"))
             void client.invalidateQueries({ queryKey: ["designer_queue"] });
