@@ -1,3 +1,7 @@
 # Business workflow reference
 
 The audited, sanitized source map is [legacy/firebase/docs/WORKFLOW_V2_MAP.md](../legacy/firebase/docs/WORKFLOW_V2_MAP.md). It records the source workflow, not completed SQL functionality. Read FEATURE_PARITY_MATRIX.md, DATABASE_SCHEMA.md and AUTHORIZATION_MATRIX.md before authorizing/implementing any Phase 02 module. Do not change source quantity, specialist-role, finishing, revision/cancellation or warehouse-readiness rules arbitrarily.
+
+Phase 02B SQL now implements creator-private draft → official WAITING_ACCEPTANCE → assigned PRINTER ACCEPTED/WAITING_PRINT → exact latest ACK → PRINTING → PRINTED, with parallel plates/issues, explicit cancellation request/response, M:N allocations and late product association. `server/services/production-workflow.ts` owns transitions; browser role/quantity claims do not bypass it. Metadata drafts live in SQL; device Blob support waits for private storage. The runtime parser and unique printer matcher were ported into `shared/quick-order-parser.ts` and `shared/printer-matching.ts` from the isolated source, without importing legacy code at runtime.
+
+Numeric OUTPUT conserves requested BAG quantity; TRACE remains zero; REPRINT is a capped source-allocation replacement. Completion writes PENDING_02C handoffs; no stock/finishing result is invented. Superseded standalone handoffs are retained. See DECISIONS for the numeric contract and [PHASE_02C_HANDOFF.md](PHASE_02C_HANDOFF.md) for downstream invariants.

@@ -1,5 +1,7 @@
 # Phase 02B handoff
 
+Historical incoming Cloud → PC handoff at Phase 02A `f649041`. PC has since implemented and verified 02B. Current state is PROJECT_STATUS/HANDOFF; next-phase preparation is [PHASE_02C_HANDOFF.md](PHASE_02C_HANDOFF.md). The original input guidance below is retained for provenance, not as a new pending-work list.
+
 Start Phase 02B after authorization. Base work on the assessed Phase 02A branch or its reviewed successor. The tested code, CI and resume commands are in [HANDOFF.md](HANDOFF.md) and [PHASE_02A_TEST_REPORT.md](PHASE_02A_TEST_REPORT.md).
 
 ## Data and workflow to preserve

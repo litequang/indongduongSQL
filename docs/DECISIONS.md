@@ -1,5 +1,25 @@
 # Decisions
 
+## 2026-11-27 — Phase 02B quantities and traceability
+
+The PC task authorizes 02B after 02A acceptance. Production quantities are integer BAG units; technical sheets and actual/spoilage sheets remain separate. No sheet-to-product conversion is implemented. A production item can join several sales products, and one sales product can span multiple runs. OUTPUT quantities consume the sales request cap only after dispatch. Draft proposals do not reserve capacity. The state-first transaction lock serializes capacity checks, codes, cancellation reconciliation, audit and invalidations. Cancellation releases only the cancelled run's allocations and retains their rows.
+
+TRACE links have exactly zero quantity and never create numeric sales output. Supplemental runs are new records with a source run and reason; their OUTPUT allocations must fit the remaining requested BAG quantity. REPRINT is explicit replacement, linked to an ACTIVE OUTPUT allocation of a PRINTED source run. It does not increase the requested-output total. Its cumulative active replacement quantity is capped by that original allocation. This conservative numeric contract follows the task's conservation requirements; it does not reinterpret old zero links. Phase 02C must reconcile replacement acceptance against its source, never add both as new accepted output. Workshop policies for additional commercial quantity need a future decision rather than an allocation override.
+
+Official standalone runs can be linked before or after printing. Backend ownership, quantity and immutable design-version checks still apply. A printed standalone handoff is retained with `superseded_at` when numeric sales allocations replace it. New per-allocation handoffs are written in the same transaction. A unique run/design ledger prevents late linking or retries from counting a design print twice; last-printer metadata records the actual assigned printer and original print time.
+
+## 2026-11-27 — Drafts, official send and attachments
+
+SQL drafts are private to their creator and recoverable after F5/backend restart. This adapts the legacy metadata backup to the SQL project's memory-only private browser-cache boundary. Unsaved form input lives in React memory; only an acknowledged Save is durable. There is no production localStorage fallback, private service-worker cache or automatic promotion of a draft into an official run. The UI retains input through failed requests and can recover an official result after a committed send whose response was lost. Stable request UUIDs, actor/hash receipts and a synchronous UI lock make retries safe. A batch contains at most 20 independently committed sends with a result for each row.
+
+No attachment chooser accepts files in 02B. Print-image records hold labels, notes and sheet counts only; registry IDs remain NULL, with no invented URL/base64. The UI identifies the Phase 03 dependency. Blob/device attachment persistence is deferred until that feature is authorized; valid metadata drafts are preserved now.
+
+## 2026-11-27 — Production authority and Phase 02C boundary
+
+Assigned PRINTER alone accepts, ACKs the exact latest revision, waits, starts, completes, or responds to a cancellation. Management has no specialist bypass. Starting requires ACCEPTED/WAITING_PRINT, current ACK and no pending cancellation. Technical revision/reassignment is limited to pre-print; reassignment resets acceptance/ACK. Plate and issue states are parallel and never add a start gate. Broken/missing plate, reissue and receive retain source action/object authority. Issue reporters may cancel their OPEN report; selected recipients may resolve or reassign. Upward management inheritance applies only to selected management roles, never to a selected specialist role/person.
+
+Print completion records actual/spoilage sheets, history and `PENDING_02C` handoffs atomically. Linked handoffs retain the sales product's requires-finishing flag; false still requires a future no-work checkpoint. 02B does not create finishing tasks, accepted stock, warehouse readiness, dispatch or shipments. Partially allocated products remain available for further production; parent lifecycle is derived from actual run/product states. Sales cancellation is blocked while effective production links or downstream work exist.
+
 ## 2026-11-26 — Independent SQL system
 
 New empty data, stable UUID users and relational core. No data/password migration, Firebase adapters or dual runtime. Keep sanitized source only as isolated Phase 02 reference. Source provenance and removed internal-looking fixtures are documented in SOURCE_PROVENANCE.md.

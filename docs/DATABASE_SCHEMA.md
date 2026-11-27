@@ -4,18 +4,18 @@ Target MariaDB 11.4 (local verified 11.4.9). InnoDB, utf8mb4_unicode_ci; UUID id
 
 ## Implemented in Phase 01
 
-| Table | Key / relationships | Purpose |
-|---|---|---|
-| schema_migrations | name PK; checksum/status/completed_statements | Immutable ordered schema and durable partial-DDL state |
-| roles | code PK; exactly eight supported values | FK authority for users |
-| users | UUID PK; username unique; role_code FK | Profile, scrypt hash, active, version, UTC timestamps, deleted_at |
-| sessions | SHA-256 opaque token PK; user_id FK; user/expiry indexes | Absolute expiration, random session-bound CSRF; no plaintext auth token |
-| auth_rate_limits | hashed bucket PK; expiry index | Multi-process username/IP brute-force limit |
-| system_state | singleton id=1 | Permanent bootstrap completion and commit-ordered change sequence |
-| settings | singleton id=1, version | Company/brand/workflow/polling scalar fields |
-| setting_options | (category,position) PK; (category,value) unique | Normalized printer/paper/color/finishing catalogs |
-| audit_logs | bigint PK; actor_id FK; created/id index | Administrative events; small JSON event context only, no passwords |
-| change_events | bigint sequence PK; entity/sequence index | Versioned invalidation events and deletion tombstones |
+| Table             | Key / relationships                                      | Purpose                                                                 |
+| ----------------- | -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| schema_migrations | name PK; checksum/status/completed_statements            | Immutable ordered schema and durable partial-DDL state                  |
+| roles             | code PK; exactly eight supported values                  | FK authority for users                                                  |
+| users             | UUID PK; username unique; role_code FK                   | Profile, scrypt hash, active, version, UTC timestamps, deleted_at       |
+| sessions          | SHA-256 opaque token PK; user_id FK; user/expiry indexes | Absolute expiration, random session-bound CSRF; no plaintext auth token |
+| auth_rate_limits  | hashed bucket PK; expiry index                           | Multi-process username/IP brute-force limit                             |
+| system_state      | singleton id=1                                           | Permanent bootstrap completion and commit-ordered change sequence       |
+| settings          | singleton id=1, version                                  | Company/brand/workflow/polling scalar fields                            |
+| setting_options   | (category,position) PK; (category,value) unique          | Normalized printer/paper/color/finishing catalogs                       |
+| audit_logs        | bigint PK; actor_id FK; created/id index                 | Administrative events; small JSON event context only, no passwords      |
+| change_events     | bigint sequence PK; entity/sequence index                | Versioned invalidation events and deletion tombstones                   |
 
 001_identity.sql creates roles, identity, state, sessions and rate counters. 002_configuration_sync.sql adds settings, options, audit and change events. Migrations seed supported role codes and singleton state only. Bootstrap inserts the first Developer and initial configuration atomically; no customer/order/staff fixture is seeded.
 
@@ -32,22 +32,43 @@ erDiagram
 
 `003_sales_design.sql` extends 001/002 without changing their checksums. It uses the same InnoDB, UTC, state-lock and audit conventions.
 
-| Table | Key / relationships | Purpose |
-|---|---|---|
-| business_counters | entity PK | Serialized counters for KH/SO human-facing unique codes |
-| customers | UUID PK, unique code, optional import job FK | Contact, Vietnamese address hierarchy, social channels, notes, external source/ID, version and soft deletion |
-| customer_import_jobs | UUID PK, owner FK | Filename, source, row count, confirmed policy, lifecycle and version |
-| customer_import_items | (job_id,position) PK, source record unique in job, matched and resulting customer FKs | Normalized candidate, classification, matched version and execution outcome |
-| sales_orders | UUID PK, unique code, customer, sale and confirming user FKs | Customer and staff snapshots, priority, promise date, notes and lifecycle version |
-| sales_order_items | UUID PK, parent order and immutable design version FKs | Stable draft line identity, product requirements, separate product quantity, tombstones for removed draft lines |
-| sales_order_status_history | (order_id,version) PK, order and actor FKs | Explicit transitions and timestamped actor snapshot with privileged reopen reason |
-| saved_designs | UUID PK, creator/customer/last printer FKs | Current version pointer and fields reserved for future real print activity |
-| design_versions | UUID PK, design/creator/customer FKs, (design_id,version) unique | Immutable design metadata and customer name snapshot |
-| design_version_tags | (version_id,tag) PK | Indexed, normalized, case/accent-insensitive tags |
+| Table                      | Key / relationships                                                                   | Purpose                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| business_counters          | entity PK                                                                             | Serialized counters for KH/SO human-facing unique codes                                                         |
+| customers                  | UUID PK, unique code, optional import job FK                                          | Contact, Vietnamese address hierarchy, social channels, notes, external source/ID, version and soft deletion    |
+| customer_import_jobs       | UUID PK, owner FK                                                                     | Filename, source, row count, confirmed policy, lifecycle and version                                            |
+| customer_import_items      | (job_id,position) PK, source record unique in job, matched and resulting customer FKs | Normalized candidate, classification, matched version and execution outcome                                     |
+| sales_orders               | UUID PK, unique code, customer, sale and confirming user FKs                          | Customer and staff snapshots, priority, promise date, notes and lifecycle version                               |
+| sales_order_items          | UUID PK, parent order and immutable design version FKs                                | Stable draft line identity, product requirements, separate product quantity, tombstones for removed draft lines |
+| sales_order_status_history | (order_id,version) PK, order and actor FKs                                            | Explicit transitions and timestamped actor snapshot with privileged reopen reason                               |
+| saved_designs              | UUID PK, creator/customer/last printer FKs                                            | Current version pointer and fields reserved for future real print activity                                      |
+| design_versions            | UUID PK, design/creator/customer FKs, (design_id,version) unique                      | Immutable design metadata and customer name snapshot                                                            |
+| design_version_tags        | (version_id,tag) PK                                                                   | Indexed, normalized, case/accent-insensitive tags                                                               |
 
 Customer contact details use first-class columns. Generated active keys enforce uniqueness on normalized nonempty phone and on nonempty `(external_source,external_id)`. Soft deletion releases active keys while retaining the customer row and linked sales. Customers can share a name. Transaction-serialized codes do not change when contact details change. Name, region, date, active identity, parent/status, priority, customer and version indexes cover point lookup and common filters/orderings. Text contains search escapes LIKE wildcards and may scan within filters.
 
 The version FK is the sales design snapshot. A new library version writes a new row with a new UUID. Order items keep their original UUID reference and still return its metadata and tags. An optional `design_versions.image_registry_id` reserves a neutral private registry reference. A 02A CHECK holds it at NULL until Phase 03 can validate the relationship and install the registry FK. Bytes, base64 and download links are absent from the image contract.
+
+## Implemented in Phase 02B
+
+`004_production.sql` follows 003; `005_production_link_handoff.sql` adds late-link handoff history and exactly-once design usage. Applied migrations 001–003 are unchanged.
+
+| Table                                                               | Keys / purpose                                                                                                                                                       |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| production_orders                                                   | UUID PK; nullable unique LIN code assigned at dispatch; creator/printer/source-run FKs; technical fields, separate sheets, version, revision/ACK and plate state     |
+| production_items                                                    | UUID PK; parent FK and `(order_id,id)` unique; product quantity; immutable design-version FK; finishing requirement                                                  |
+| production_allocations                                              | UUID PK; sales/item/source-allocation/actor FKs; unique `(production_item_id,sales_item_id,kind)`; PROPOSED/ACTIVE/RELEASED; OUTPUT, zero TRACE, replacement REPRINT |
+| production_tags / production_print_images                           | Normalized tags and technical labels/notes/sheet counts; registry reference CHECKed NULL until Phase 03                                                              |
+| production_revisions                                                | `(order_id,revision)` PK; immutable technical snapshot, actor and reason                                                                                             |
+| production_status_history / production_plates                       | Append-only events, unique order/version, actor snapshot; parallel plate state                                                                                       |
+| production_issues / production_issue_users / production_issue_roles | OPEN/RESOLVED/CANCELLED reports and normalized recipient FKs; current issues nonblocking                                                                             |
+| production_cancellation_requests                                    | Reasons/responder snapshots; nullable generated slot with unique `(order_id,pending_slot)` prevents concurrent pending requests                                      |
+| production_comments                                                 | Text conversation and actor FK; never lifecycle authority                                                                                                            |
+| production_action_receipts                                          | Unique request UUID, actor/order/action/hash and result version committed with mutation                                                                              |
+| production_finishing_handoffs                                       | Same-parent composite FK to item; unique allocation FK; BAG quantity, finishing flag, replacement marker, PENDING_02C and optional superseded_at                     |
+| production_design_prints                                            | Unique `(order_id,design_id)` and FKs; completed-run usage including late linking                                                                                    |
+
+Sales products gain design-queue status/version, instruction and note fields. Queue edits cannot overwrite dispatched products. Draft links do not consume capacity; dispatch/late-link validate sums under the state lock. REPRINT is excluded from OUTPUT totals. No stock/shipment table is created. Future acceptance excludes superseded handoffs and reconciles replacement against its source. See DECISIONS and PHASE_02C_HANDOFF.
 
 ## Domain relationships, including planned downstream tables
 
@@ -87,7 +108,7 @@ At confirmation/assignment/completion/dispatch, take the system-state lock first
 
 Every printed linked product passes the finishing checkpoint, including explicit no-work confirmation. Non-production products route directly to finishing or warehouse according to flags. Warehouse export checks every active sibling product and accepted stock for the entire sales order before creating/confirming a dispatch. Shipment returns enter stock only after inspection.
 
-Soft delete business entities where history must remain. Keep immutable status and audit history and snapshots. Each soft delete increments the version and emits a tombstone. Core user operations support lock and unlock, with deleted_at reserved for future use. Phase 02B/02C tables in the relationship diagram remain planned.
+Soft delete business entities where history must remain. Keep immutable status and audit history and snapshots. Each soft delete increments the version and emits a tombstone. Core user operations support lock and unlock, with deleted_at reserved for future use. Phase 02B production is implemented; the diagram's Phase 02C finishing/stock/dispatch/shipment tables remain planned.
 
 ## Migration operation
 
