@@ -181,7 +181,12 @@ export async function salesDetail(db: PoolConnection, id: string) {
     "SALES_ORDER_CANCELLED",
     "SALES_ORDER_FORCE_REOPENED",
   ]);
-  return { order, items, history, activity };
+  const [dispatch] = await rows(
+    db,
+    "SELECT id FROM warehouse_dispatches WHERE order_id=? LIMIT 1",
+    [id],
+  );
+  return { order, items, history, activity, hasDispatchHistory: !!dispatch };
 }
 async function history(
   db: PoolConnection,
@@ -409,6 +414,16 @@ export async function transitionSales(
       [id],
     );
   } else {
+    const [dispatch] = await rows(
+      db,
+      "SELECT id FROM warehouse_dispatches WHERE order_id=? LIMIT 1",
+      [id],
+    );
+    if (dispatch)
+      throw conflict(
+        "DISPATCH_HISTORY",
+        "Đơn có lịch sử xuất kho. Xử lý trên luồng kho vận.",
+      );
     if (!["DELIVERED", "COMPLETED"].includes(current.status))
       throw conflict(
         "INVALID_STATUS",

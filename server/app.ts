@@ -13,6 +13,7 @@ import { registerUserRoutes } from "./routes/users";
 import { registerSettingsRoutes } from "./routes/settings";
 import { registerBusinessRoutes } from "./routes/business";
 import { registerProductionRoutes } from "./routes/production";
+import { registerFulfillmentRoutes } from "./routes/fulfillment";
 export async function createApp(pool: Pool, config: Config) {
   const app = express();
   app.disable("x-powered-by");
@@ -51,7 +52,7 @@ export async function createApp(pool: Pool, config: Config) {
   app.use("/api", (req, res, next) => {
     const largeBusinessRequest =
       (req.method === "POST" &&
-        /^\/(?:sales-orders\/?$|production-orders\/?$|customer-imports\/[^/]+\/rows\/?$)/i.test(
+        /^\/(?:sales-orders\/?$|shipments\/[^/]+\/inspect-return\/?$|production-orders\/?$|customer-imports\/[^/]+\/rows\/?$)/i.test(
           req.path,
         )) ||
       (req.method === "PATCH" &&
@@ -82,6 +83,7 @@ export async function createApp(pool: Pool, config: Config) {
   registerSettingsRoutes(app, pool, config);
   registerBusinessRoutes(app, pool, config);
   registerProductionRoutes(app, pool, config);
+  registerFulfillmentRoutes(app, pool, config);
   app.use("/api", (_req, res) =>
     res
       .status(404)

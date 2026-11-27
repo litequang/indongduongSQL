@@ -238,7 +238,9 @@ export async function productionDetail(
   );
   const handoffs = await rows(
     db,
-    "SELECT * FROM production_finishing_handoffs WHERE order_id=? ORDER BY id",
+    `SELECT h.*,t.status AS task_status, a.id IS NOT NULL AS inspected FROM production_finishing_handoffs h
+      LEFT JOIN finishing_tasks t ON t.id=h.id LEFT JOIN finished_goods_acceptances a ON a.id=h.id
+      WHERE h.order_id=? ORDER BY h.id`,
     [id],
   );
   return {
@@ -323,6 +325,8 @@ export async function productionDetail(
       status: h.status,
       replacement: !!h.replacement,
       superseded: !!h.superseded_at,
+      taskStatus: h.task_status,
+      inspected: !!h.inspected,
     })),
   };
 }

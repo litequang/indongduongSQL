@@ -254,6 +254,8 @@ export interface ProductionDetail {
     status: "PENDING_02C";
     replacement: boolean;
     superseded: boolean;
+    taskStatus: string | null;
+    inspected: boolean;
   }[];
 }
 export const actionBase = z

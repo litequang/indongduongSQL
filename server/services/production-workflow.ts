@@ -13,6 +13,7 @@ import {
 import { rows } from "../database/pool";
 import { allowed, fresh } from "../middleware/http";
 import { changed, audit } from "./audit";
+import { reconcileOrder } from "./sales-progress";
 import {
   businessCode,
   conflict,
@@ -104,97 +105,21 @@ async function issueRecipients(db: PoolConnection, id: string) {
     roles: roles.map((r) => r.role_code as Role),
   };
 }
-async function linkedSales(db: PoolConnection, id: string) {
-  return rows(
+async function reconcileSales(db: PoolConnection, id: string, actor: User) {
+  const orders = await rows(
     db,
-    `SELECT DISTINCT s.id,s.order_id FROM production_allocations a JOIN production_items i ON i.id=a.production_item_id JOIN sales_order_items s ON s.id=a.sales_item_id WHERE i.order_id=? ORDER BY s.order_id,s.id`,
+    `SELECT DISTINCT s.order_id FROM production_allocations a
+    JOIN production_items i ON i.id=a.production_item_id JOIN sales_order_items s ON s.id=a.sales_item_id
+    WHERE i.order_id=? ORDER BY s.order_id`,
     [id],
   );
-}
-// Caller holds the state lock before parents; all numeric conservation uses BAG quantities.
-async function reconcileSales(db: PoolConnection, id: string, actor: User) {
-  const linked = await linkedSales(db, id);
-  const parents = new Set<string>();
-  for (const s of linked) {
-    parents.add(s.order_id);
-    const [item] = await rows(
+  for (const order of orders)
+    await reconcileOrder(
       db,
-      "SELECT * FROM sales_order_items WHERE id=? FOR UPDATE",
-      [s.id],
+      order.order_id,
+      actor,
+      "Cập nhật từ lệnh sản xuất",
     );
-    if (item.status === "CANCELLED") continue;
-    const [a] = await rows(
-      db,
-      `SELECT COALESCE(SUM(a.kind<>'TRACE' AND p.status<>'PRINTED'),0) AS pending, COALESCE(SUM(a.kind<>'TRACE' AND p.status='PRINTED'),0) AS printed, COALESCE(SUM(IF(a.kind='OUTPUT',a.quantity,0)),0) AS allocated, COUNT(*) AS n
-      FROM production_allocations a JOIN production_items i ON i.id=a.production_item_id JOIN production_orders p ON p.id=i.order_id WHERE a.sales_item_id=? AND a.state='ACTIVE'`,
-      [s.id],
-    );
-    const target =
-      Number(a.pending) > 0
-        ? "IN_PRODUCTION"
-        : Number(a.allocated) < item.quantity
-          ? "READY_FOR_PRODUCTION"
-          : Number(a.printed) > 0
-            ? "READY_FOR_FINISHING"
-            : Number(a.n) > 0
-              ? "IN_PRODUCTION"
-              : "READY_FOR_PRODUCTION";
-    await db.execute(
-      "UPDATE sales_order_items SET status=?,updated_at=CURRENT_TIMESTAMP(3) WHERE id=?",
-      [target, s.id],
-    );
-  }
-  for (const parent of [...parents].sort()) {
-    const [o] = await rows(
-      db,
-      "SELECT * FROM sales_orders WHERE id=? FOR UPDATE",
-      [parent],
-    );
-    if (
-      [
-        "CANCELLED",
-        "COMPLETED",
-        "DELIVERED",
-        "SHIPPING",
-        "READY_TO_SHIP",
-      ].includes(o.status)
-    )
-      continue;
-    const items = await rows(
-      db,
-      "SELECT status,requires_production FROM sales_order_items WHERE order_id=? AND deleted_at IS NULL AND status<>'CANCELLED'",
-      [parent],
-    );
-    const target = items.some((i) => i.status === "IN_PRODUCTION")
-      ? "IN_PRODUCTION"
-      : items.some(
-            (i) =>
-              i.requires_production &&
-              ["WAITING_DESIGN", "DESIGNING", "READY_FOR_PRODUCTION"].includes(
-                i.status,
-              ),
-          )
-        ? "DESIGNING"
-        : "FULFILLING";
-    await db.execute(
-      "UPDATE sales_orders SET status=?,version=version+1,updated_at=CURRENT_TIMESTAMP(3) WHERE id=?",
-      [target, parent],
-    );
-    if (o.status !== target)
-      await db.execute(
-        "INSERT INTO sales_order_status_history(order_id,version,from_status,to_status,actor_id,actor_name,reason) VALUES(?,?,?,?,?,?,?)",
-        [
-          parent,
-          o.version + 1,
-          o.status,
-          target,
-          actor.id,
-          actor.name,
-          "Cập nhật từ lệnh sản xuất",
-        ],
-      );
-    await changed(db, "sales_orders", parent, o.version + 1);
-  }
 }
 async function reserve(db: PoolConnection, id: string) {
   const allocations = await rows(
@@ -223,6 +148,12 @@ async function reserve(db: PoolConnection, id: string) {
         "SALES_ITEM_INVALID",
         "Sản phẩm nguồn không còn được phép phát lệnh.",
       );
+    const [dispatched] = await rows(
+      db,
+      "SELECT id FROM warehouse_dispatches WHERE order_id=? AND active_slot=1",
+      [a.order_id],
+    );
+    if (dispatched) throw conflict("DISPATCHED_ORDER", "Đơn đã xuất kho.");
     if (a.kind === "OUTPUT")
       demand.set(
         a.sales_item_id,
@@ -316,6 +247,17 @@ async function completeHandoffs(
           if (a.design_version_id) designs.add(a.design_version_id);
           continue;
         }
+        const [received] = await rows(
+          db,
+          `SELECT 1 FROM production_finishing_handoffs h
+          JOIN finishing_tasks t ON t.id=h.id WHERE h.production_item_id=? AND h.allocation_id IS NULL AND h.superseded_at IS NULL`,
+          [item.id],
+        );
+        if (received)
+          throw conflict(
+            "HANDOFF_ALREADY_RECEIVED",
+            "Sản lượng độc lập đã được tiếp nhận. Không thể thay nguồn bàn giao.",
+          );
         await db.execute(
           "UPDATE production_finishing_handoffs SET superseded_at=COALESCE(superseded_at,CURRENT_TIMESTAMP(3)) WHERE production_item_id=? AND allocation_id IS NULL",
           [item.id],
@@ -890,6 +832,11 @@ export async function actProduction(
     [target, id],
   );
   if (salesChanged) await reconcileSales(db, id, actor);
+  if (
+    input.action === "complete" ||
+    (input.action === "link-products" && target === "PRINTED")
+  )
+    await changed(db, "fulfillment", "workspace", 0);
   await productionEvent(
     db,
     id,
