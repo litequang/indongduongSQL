@@ -29,7 +29,7 @@ export async function migrate(
   let locked = false;
   const lockName = `idd:migrate:${createHash("sha256").update(expectedName).digest("hex").slice(0, 32)}`;
   try {
-    const [lock] = await rows(db, "SELECT GET_LOCK(?, 10) AS acquired", [
+    const [lock] = await rows(db, "SELECT GET_LOCK(?, 60) AS acquired", [
       lockName,
     ]);
     if (Number(lock.acquired) !== 1) throw new Error("Migration lock timeout.");

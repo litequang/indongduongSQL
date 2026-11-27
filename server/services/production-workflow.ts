@@ -7,11 +7,12 @@ import {
   isManagement,
   ISSUE_POLICIES,
   technicalFields,
+  productionFields,
   type ProductionActionInput,
 } from "../../shared/production";
 import { rows } from "../database/pool";
 import { allowed, fresh } from "../middleware/http";
-import { changed } from "./audit";
+import { changed,audit } from "./audit";
 import {
   businessCode,
   conflict,
@@ -25,6 +26,7 @@ import {
   plateEvent,
   revisionEvent,
   validatePrinter,
+  validateProductionInput,
 } from "../repositories/production";
 
 const preprint = ["WAITING_ACCEPTANCE", "ACCEPTED", "WAITING_PRINT"];
@@ -198,7 +200,7 @@ async function reserve(db: PoolConnection, id: string) {
   const allocations = await rows(
     db,
     `SELECT a.*,s.quantity AS ordered_quantity,s.status AS sales_status,s.requires_production,s.deleted_at,o.status AS sales_order_status,s.order_id
-    FROM production_allocations a JOIN production_items i ON i.id=a.production_item_id JOIN sales_order_items s ON s.id=a.sales_item_id JOIN sales_orders o ON o.id=s.order_id WHERE i.order_id=? ORDER BY s.order_id,s.id,a.id`,
+    FROM production_allocations a JOIN production_items i ON i.id=a.production_item_id JOIN sales_order_items s ON s.id=a.sales_item_id JOIN sales_orders o ON o.id=s.order_id WHERE i.order_id=? AND a.state='PROPOSED' ORDER BY s.order_id,s.id,a.id`,
     [id],
   );
   const demand = new Map<string, number>();
@@ -281,7 +283,16 @@ async function reserve(db: PoolConnection, id: string) {
     [id],
   );
 }
-async function completeHandoffs(db: PoolConnection, id: string, actor: User) {
+async function completeHandoffs(
+  db: PoolConnection,
+  id: string,
+  replacement: boolean,
+) {
+  const [printedOrder] = await rows(
+    db,
+    "SELECT printer_id,printed_at FROM production_orders WHERE id=?",
+    [id],
+  );
   const items = await rows(
     db,
     "SELECT * FROM production_items WHERE order_id=? ORDER BY id",
@@ -296,6 +307,19 @@ async function completeHandoffs(db: PoolConnection, id: string, actor: User) {
     );
     if (allocations.length)
       for (const a of allocations) {
+        const [existing] = await rows(
+          db,
+          "SELECT id FROM production_finishing_handoffs WHERE allocation_id=?",
+          [a.id],
+        );
+        if (existing) {
+          if (a.design_version_id) designs.add(a.design_version_id);
+          continue;
+        }
+        await db.execute(
+          "UPDATE production_finishing_handoffs SET superseded_at=COALESCE(superseded_at,CURRENT_TIMESTAMP(3)) WHERE production_item_id=? AND allocation_id IS NULL",
+          [item.id],
+        );
         await db.execute(
           "INSERT INTO production_finishing_handoffs(id,order_id,production_item_id,allocation_id,quantity,requires_finishing,replacement) VALUES(?,?,?,?,?,?,?)",
           [
@@ -319,11 +343,25 @@ async function completeHandoffs(db: PoolConnection, id: string, actor: User) {
           "SELECT id FROM production_allocations WHERE production_item_id=?",
           [item.id],
         )
+      ).length &&
+      !(
+        await rows(
+          db,
+          "SELECT id FROM production_finishing_handoffs WHERE production_item_id=? AND allocation_id IS NULL",
+          [item.id],
+        )
       ).length
     )
       await db.execute(
-        "INSERT INTO production_finishing_handoffs(id,order_id,production_item_id,allocation_id,quantity,requires_finishing,replacement) VALUES(?,?,?,NULL,?,?,0)",
-        [randomUUID(), id, item.id, item.quantity, !!item.requires_finishing],
+        "INSERT INTO production_finishing_handoffs(id,order_id,production_item_id,allocation_id,quantity,requires_finishing,replacement) VALUES(?,?,?,NULL,?,?,?)",
+        [
+          randomUUID(),
+          id,
+          item.id,
+          item.quantity,
+          !!item.requires_finishing,
+          replacement,
+        ],
       );
     if (item.design_version_id) designs.add(item.design_version_id);
   }
@@ -336,9 +374,25 @@ async function completeHandoffs(db: PoolConnection, id: string, actor: User) {
     );
     if (updatedDesigns.has(v.design_id)) continue;
     updatedDesigns.add(v.design_id);
+    const [printedBefore] = await rows(
+      db,
+      "SELECT order_id FROM production_design_prints WHERE order_id=? AND design_id=?",
+      [id, v.design_id],
+    );
+    if (printedBefore) continue;
     await db.execute(
-      "UPDATE saved_designs SET print_count=print_count+1,last_printed_at=CURRENT_TIMESTAMP(3),last_printer_id=? WHERE id=?",
-      [actor.id, v.design_id],
+      "INSERT INTO production_design_prints(order_id,design_id) VALUES(?,?)",
+      [id, v.design_id],
+    );
+    await db.execute(
+      "UPDATE saved_designs SET print_count=print_count+1,last_printer_id=IF(last_printed_at IS NULL OR last_printed_at<=?, ?,last_printer_id),last_printed_at=GREATEST(COALESCE(last_printed_at,?),?) WHERE id=?",
+      [
+        printedOrder.printed_at,
+        printedOrder.printer_id,
+        printedOrder.printed_at,
+        printedOrder.printed_at,
+        v.design_id,
+      ],
     );
     const [d] = await rows(db, "SELECT version FROM saved_designs WHERE id=?", [
       v.design_id,
@@ -379,6 +433,79 @@ export async function actProduction(
   let plateType = r.plate_type;
   let plateStatus = r.plate_status;
   switch (input.action) {
+    case "link-products": {
+      allowed(canComposeProduction(actor.role));
+      statusAllowed(r, [...preprint, "PRINTING", "PRINTED"]);
+      const detail = await productionDetail(db, id, actor);
+      if (
+        new Set(input.items.map((i) => i.productionItemId)).size !==
+        input.items.length
+      )
+        throw conflict("DUPLICATE_ITEM", "Dòng sản phẩm bị trùng.");
+      const candidate = productionFields.parse(
+        Object.fromEntries(
+          Object.keys(productionFields.shape).map((key) => [
+            key,
+            detail.order[key as keyof typeof detail.order],
+          ]),
+        ),
+      );
+      for (const link of input.items) {
+        const item = candidate.items.find(
+          (i) => i.id === link.productionItemId,
+        );
+        if (!item)
+          throw conflict("ITEM_NOT_FOUND", "Sản phẩm không thuộc lệnh này.");
+        for (const allocation of link.allocations) {
+          const [sales] = await rows(
+            db,
+            "SELECT * FROM sales_order_items WHERE id=? AND deleted_at IS NULL",
+            [allocation.salesItemId],
+          );
+          if (!sales) throw missing();
+          if (
+            item.designVersionId &&
+            sales.design_version_id &&
+            item.designVersionId !== sales.design_version_id
+          )
+            throw conflict(
+              "DESIGN_MISMATCH",
+              "Phiên bản mẫu không khớp sản phẩm nguồn.",
+            );
+          item.designVersionId ??= sales.design_version_id;
+          item.allocations.push(allocation);
+        }
+      }
+      validateProductionInput(candidate);
+      for (const link of input.items) {
+        const item = candidate.items.find(
+          (i) => i.id === link.productionItemId,
+        )!;
+        await db.execute(
+          "UPDATE production_items SET design_version_id=? WHERE id=? AND order_id=?",
+          [item.designVersionId, item.id, id],
+        );
+        for (const a of link.allocations)
+          await db.execute(
+            "INSERT INTO production_allocations(id,production_item_id,sales_item_id,quantity,kind,source_allocation_id,created_by) VALUES(?,?,?,?,?,?,?)",
+            [
+              a.id,
+              item.id,
+              a.salesItemId,
+              a.quantity,
+              a.kind,
+              a.sourceAllocationId,
+              actor.id,
+            ],
+          );
+      }
+      await reserve(db, id);
+      if (r.status === "PRINTED")
+        await completeHandoffs(db, id, r.run_kind === "REPRINT");
+      salesChanged = true;
+      note = "Liên kết sản phẩm vào lệnh chính thức";
+      break;
+    }
     case "dispatch": {
       allowed(canComposeProduction(actor.role) && r.created_by === actor.id);
       statusAllowed(r, ["DRAFT"]);
@@ -390,10 +517,10 @@ export async function actProduction(
         );
       await reserve(db, id);
       const code = await businessCode(db, "production_orders");
-      await db.execute("UPDATE production_orders SET code=?,status='WAITING_ACCEPTANCE' WHERE id=?", [
-        code,
-        id,
-      ]);
+      await db.execute(
+        "UPDATE production_orders SET code=?,status='WAITING_ACCEPTANCE' WHERE id=?",
+        [code, id],
+      );
       target = "WAITING_ACCEPTANCE";
       await revisionEvent(
         db,
@@ -474,7 +601,7 @@ export async function actProduction(
         "UPDATE production_orders SET printed_at=CURRENT_TIMESTAMP(3),actual_printed_sheets=?,spoilage_sheets=?,printed_note=? WHERE id=?",
         [input.actualPrintedSheets, input.spoilageSheets, note, id],
       );
-      await completeHandoffs(db, id, actor);
+      await completeHandoffs(db, id, r.run_kind === "REPRINT");
       salesChanged = true;
       break;
     case "revise": {
@@ -524,6 +651,7 @@ export async function actProduction(
         await revisionEvent(db, id, r.revision + 1, actor, t, input.reason);
       }
       if (input.printerId !== r.printer_id) {
+        await audit(db,actor.id,'PRODUCTION_PRINTER_UNASSIGNED',id,{formerPrinterId:r.printer_id});
         target = "WAITING_ACCEPTANCE";
         await db.execute(
           "UPDATE production_orders SET printer_id=?,acknowledged_revision=0,accepted_at=NULL WHERE id=?",

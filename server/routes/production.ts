@@ -37,7 +37,7 @@ export function registerProductionRoutes(
     "/api/designer-queue",
     wrap(async (req, res) => {
       const s = await readSession(req);
-      allowed(canReviseProduction(s.user.role));
+      allowed(canComposeProduction(s.user.role));
       res.json(await listDesignerQueue(pool, designerQuery.parse(req.query)));
     }),
   );
@@ -142,11 +142,17 @@ export function registerProductionRoutes(
           );
           results.push({ id, ok: true, order: detail.order });
         } catch (e) {
-          if (!(e instanceof ApiError)) throw e;
           results.push({
             id,
             ok: false,
-            error: { code: e.code, message: e.message },
+            error:
+              e instanceof ApiError
+                ? { code: e.code, message: e.message }
+                : {
+                    code: "REQUEST_FAILED",
+                    message:
+                      "Không thể gửi lệnh này. Nháp vẫn được giữ; thử lại cùng yêu cầu.",
+                  },
           });
         }
       }

@@ -163,7 +163,6 @@ export function listProduction(
     );
     args.push(...Array<string>(4).fill(searchPattern(q.search)));
   }
-  const from = select.slice(select.indexOf(" FROM "));
   return businessPage(
     pool,
     q,
@@ -180,7 +179,6 @@ export function listProduction(
         }[q.sort] + ` ${q.direction},o.id ${q.direction}`,
     },
     async (db, list) => {
-      void from;
       const output: ProductionOrder[] = [];
       for (const r of list) output.push(await dto(db, r));
       return output;
@@ -324,6 +322,7 @@ export async function productionDetail(
       requiresFinishing: !!h.requires_finishing,
       status: h.status,
       replacement: !!h.replacement,
+      superseded: !!h.superseded_at,
     })),
   };
 }
@@ -388,7 +387,7 @@ export async function validatePrinter(db: Db, id: string | null) {
   );
   if (!p) throw conflict("PRINTER_INVALID", "Thợ in không còn hoạt động.");
 }
-function validateInput(input: ProductionInput) {
+export function validateProductionInput(input: ProductionInput) {
   for (const list of [
     input.items,
     input.printImages,
@@ -450,7 +449,7 @@ export async function saveProduction(
   actor: User,
   expected?: number,
 ) {
-  validateInput(input);
+  validateProductionInput(input);
   const [current] = await rows(
     db,
     "SELECT * FROM production_orders WHERE id=?",
@@ -582,6 +581,25 @@ export async function saveProduction(
           "DESIGN_MISMATCH",
           "Giữ đúng phiên bản mẫu đã chốt của sản phẩm nguồn.",
         );
+      if (a.sourceAllocationId) {
+        const [source] = await rows(
+          db,
+          `SELECT a.sales_item_id,a.kind,a.state,i.order_id,o.status FROM production_allocations a JOIN production_items i ON i.id=a.production_item_id JOIN production_orders o ON o.id=i.order_id WHERE a.id=?`,
+          [a.sourceAllocationId],
+        );
+        if (
+          !source ||
+          source.sales_item_id !== a.salesItemId ||
+          source.order_id !== input.sourceOrderId ||
+          source.kind !== "OUTPUT" ||
+          source.state !== "ACTIVE" ||
+          source.status !== "PRINTED"
+        )
+          throw conflict(
+            "REPRINT_SOURCE_INVALID",
+            "In lại cần phân bổ sản phẩm gốc đã in xong.",
+          );
+      }
       await db.execute(
         "INSERT INTO production_allocations(id,production_item_id,sales_item_id,quantity,kind,source_allocation_id,created_by) VALUES(?,?,?,?,?,?,?)",
         [
