@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { mkdtemp, writeFile, rm, copyFile } from "node:fs/promises";
 import os from "node:os";
@@ -76,15 +76,65 @@ test("real MariaDB / HTTP SQL foundation acceptance", async (t) => {
           await pool.execute(
             "UPDATE system_state SET change_sequence=17 WHERE id=1",
           );
+          const productionMigrations = [
+            "003_sales_design.sql",
+            "004_production.sql",
+            "005_production_link_handoff.sql",
+          ];
+          for (const name of productionMigrations)
+            await copyFile(
+              path.join(migrationDirectory, name),
+              path.join(base, name),
+            );
+          assert.deepEqual(
+            await migrate(pool, config.DB_NAME, base),
+            productionMigrations,
+          );
+          const owner = randomUUID(),
+            order = randomUUID(),
+            item = randomUUID(),
+            handoff = randomUUID();
+          await pool.execute(
+            `INSERT INTO users(id,username,name,role_code,password_hash)
+            VALUES(?,'upgrade_source','Migration test','PRINTER','test-only-unusable')`,
+            [owner],
+          );
+          await pool.execute(
+            `INSERT INTO production_orders(id,code,created_by,printer_id,title,instruction_raw,
+            paper_type,paper_gsm,paper_width,paper_height,color,total_sheets,machine,note,finishing_note,reference,
+            is_urgent,urgent_reason,run_kind,run_reason,plate_type,plate_status,plate_note,status,request_hash,printed_at)
+            VALUES(?,'LIN-UPGRADE',?,?,'Migration test','700 tờ','','','','','',700,'','','','',0,'',
+            'NORMAL','','NONE','NOT_REQUIRED','','PRINTED',REPEAT('0',64),UTC_TIMESTAMP(3))`,
+            [order, owner, owner],
+          );
+          await pool.execute(
+            `INSERT INTO production_items(id,order_id,position,product_name,quantity,requires_finishing,note)
+            VALUES(?,?,0,'Túi thử nâng cấp',17,0,'')`,
+            [item, order],
+          );
+          await pool.execute(
+            `INSERT INTO production_finishing_handoffs(id,order_id,production_item_id,quantity,requires_finishing,replacement)
+            VALUES(?,?,?,17,0,0)`,
+            [handoff, order, item],
+          );
           const applied = await Promise.all([
             migrate(pool, config.DB_NAME),
             migrate(pool, config.DB_NAME),
           ]);
-          assert.deepEqual(applied.flat(), [
-            "003_sales_design.sql",
-            "004_production.sql",
-            "005_production_link_handoff.sql",
-          ]);
+          assert.deepEqual(applied.flat(), ["006_fulfillment.sql"]);
+          const [source] = await rows(
+            pool,
+            "SELECT * FROM production_finishing_handoffs WHERE id=?",
+            [handoff],
+          );
+          assert.equal(source.status, "PENDING_02C");
+          assert.equal(source.quantity, 17);
+          assert.equal(source.superseded_at, null);
+          const [inventory] = await rows(
+            pool,
+            "SELECT COUNT(*) AS n FROM finished_goods",
+          );
+          assert.equal(Number(inventory.n), 0);
           const [state] = await rows(
             pool,
             "SELECT change_sequence FROM system_state WHERE id=1",

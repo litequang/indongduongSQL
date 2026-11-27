@@ -266,7 +266,7 @@ test.describe.serial("Phase 02B production workspaces", () => {
       .click();
     await expect(
       printer.getByText(
-        "Đã in xong; đang chờ phân hệ gia công Phase 02C. Chưa tạo tồn kho hoặc xác nhận giao hàng.",
+        "Đã in xong. Xem trạng thái từng bàn giao bên dưới. Nghiệm thu thành phẩm mới ghi tăng tồn kho.",
         { exact: true },
       ),
     ).toBeVisible();
