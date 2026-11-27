@@ -68,7 +68,25 @@ The version FK is the sales design snapshot. A new library version writes a new 
 | production_finishing_handoffs                                       | Same-parent composite FK to item; unique allocation FK; BAG quantity, finishing flag, replacement marker, PENDING_02C and optional superseded_at                     |
 | production_design_prints                                            | Unique `(order_id,design_id)` and FKs; completed-run usage including late linking                                                                                    |
 
-Sales products gain design-queue status/version, instruction and note fields. Queue edits cannot overwrite dispatched products. Draft links do not consume capacity; dispatch/late-link validate sums under the state lock. REPRINT is excluded from OUTPUT totals. No stock/shipment table is created. Future acceptance excludes superseded handoffs and reconciles replacement against its source. See DECISIONS and PHASE_02C_HANDOFF.
+Sales products gain design-queue status/version, instruction and note fields. Queue edits cannot overwrite dispatched products. Draft links do not consume capacity; dispatch/late-link validate sums under the state lock. REPRINT is excluded from OUTPUT totals. Migrations 004/005 publish production and handoff data. Migration 006 owns downstream tables and excludes superseded handoffs from receipt. DECISIONS records the remaining replacement acceptance policy.
+
+## Implemented in Phase 02C
+
+Migration `006_fulfillment.sql` follows 001–005 with their published checksums preserved. It adds InnoDB tables and dispatch/shipment counters. Existing PENDING_02C rows remain available for explicit eligible receipt.
+
+| Table | Relationships and invariants |
+| --- | --- |
+| finishing_tasks, finishing_task_history | Task PK references the print handoff. Assigned/claiming user FKs, versioned immutable events and cancellation request/response history. |
+| finished_goods_acceptances | At most one inspection per task. Accepted, rejected and short partition handed-off BAG quantity. Stores inspector, note and timestamp. |
+| finished_goods | One positive-quantity lot per acceptance. Optional sales product FK for standalone output. Remaining available, cumulative dispatch, return and restock are maintained transactionally. |
+| warehouse_dispatches, warehouse_dispatch_items | Numbered slips and immutable product snapshots. One current slip per order via the generated active slot. Each line references the stock lot and sales item. |
+| shipments, shipment_history | Numbered shipments and immutable command history, with one effective shipment per slip. Receiver, carrier and tracking details are stored locally. |
+| shipment_returns | One outcome per shipment and dispatch line. Full line quantity, disposition, inspector and reason are retained. |
+| inventory_movements | Audit ledger tied to the lot, dispatch line and shipment. Signed availability delta. Scrap and hold have zero delta. |
+| workflow_issues | Handoff/stage scope, reporter FK, selected role/user recipients and close metadata. |
+| fulfillment_receipts | Unique request UUID bound to actor and payload hash. The persisted result ID/version replays without a second mutation. |
+
+All writes use the existing state-first lock, prepared statements, audit and commit-ordered change events. The normal dispatch transaction checks every active sibling before stock writes, guards each decrement against insufficient stock and rolls back the slip and every movement on failure. Return inspection and any restock share a transaction.
 
 ## Domain relationships, including planned downstream tables
 
@@ -87,14 +105,21 @@ erDiagram
   production_orders ||--o{ production_status_history : events
   production_orders ||--o{ production_comments : conversation
   production_orders ||--o{ production_issues : reported_issue
-  sales_order_items ||--o{ finishing_tasks : checkpoint
-  production_items o|--o{ finishing_tasks : source_run
-  finishing_tasks o|--o{ finished_goods : accepted_output
-  sales_order_items ||--o{ finished_goods : direct_or_finished
+  production_items ||--o{ production_finishing_handoffs : source_item
+  production_allocations o|--o| production_finishing_handoffs : numeric_source
+  production_finishing_handoffs ||--o| finishing_tasks : received
+  finishing_tasks ||--o{ finishing_task_history : actions
+  finishing_tasks ||--o| finished_goods_acceptances : inspected
+  finished_goods_acceptances ||--o| finished_goods : accepted_lot
+  sales_order_items o|--o{ finished_goods : allocated_product
+  sales_orders ||--o{ warehouse_dispatches : slip_history
   warehouse_dispatches ||--|{ warehouse_dispatch_items : contains
   finished_goods ||--o{ warehouse_dispatch_items : exact_quantity
-  shipments ||--|{ shipment_items : contains
-  warehouse_dispatch_items ||--o{ shipment_items : dispatch_reference
+  finished_goods ||--o{ inventory_movements : ledger
+  warehouse_dispatches ||--o{ shipments : logistics_history
+  shipments ||--o{ shipment_returns : inspected_lines
+  warehouse_dispatch_items ||--o{ shipment_returns : returned_line
+  production_finishing_handoffs ||--o{ workflow_issues : stage_issue
   saved_designs ||--o{ design_versions : immutable_version
   image_registry ||--o{ image_replicas : verified_copy
   image_backup_jobs ||--o{ image_replicas : transfer_job
@@ -106,9 +131,9 @@ Products/bags are not print sheets. `sales_order_items.quantity`, allocation pro
 
 At confirmation/assignment/completion/dispatch, take the system-state lock first, then lock owning parent(s) in stable UUID order. Validate expected versions, calculate remaining quantity from committed allocations/goods/dispatch items, write outputs and audit, increment versions and publish changes in the same transaction. Unique idempotency keys make retries safe. Nonnegative CHECKs/FKs and composite same-parent constraints supplement backend checks. Do not hardcode broad management override for specialist printer/finisher/warehouse actions.
 
-Every printed linked product passes the finishing checkpoint, including explicit no-work confirmation. Non-production products route directly to finishing or warehouse according to flags. Warehouse export checks every active sibling product and accepted stock for the entire sales order before creating/confirming a dispatch. Shipment returns enter stock only after inspection.
+Every printed linked product passes the finishing checkpoint, including explicit no-work confirmation. Non-printing products retain their flags and wait for confirmed physical source policy. Warehouse export checks every active sibling product and accepted stock for the entire sales order before creating/confirming a dispatch. Shipment returns enter stock only after inspection.
 
-Soft delete business entities where history must remain. Keep immutable status and audit history and snapshots. Each soft delete increments the version and emits a tombstone. Core user operations support lock and unlock, with deleted_at reserved for future use. Phase 02B production is implemented; the diagram's Phase 02C finishing/stock/dispatch/shipment tables remain planned.
+Soft delete business entities where history must remain. Keep immutable status and audit history and snapshots. Each soft delete increments the version and emits a tombstone. Core user operations support lock and unlock, with deleted_at reserved for future use. The image registry and replica tables in the diagram are planned for Phase 03.
 
 ## Migration operation
 

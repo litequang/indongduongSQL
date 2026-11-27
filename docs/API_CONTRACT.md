@@ -1,6 +1,27 @@
-# REST API contract — Foundation and Phase 02A/B
+# REST API contract — Foundation and Phase 02A–C
 
-The sections below include Foundation, Phase 02A and Phase 02B. Phase 02C endpoints remain absent.
+The API uses the SQL Foundation session, Origin and CSRF controls.
+
+## Phase 02C fulfillment
+
+All POST commands take a UUID `requestId` and, for an existing mutable record, the current `version`. Receipt and issue reporting take a request ID without version. Success returns `{id,version}`. A repeated actor/target/payload returns the committed result. Reusing the UUID for another action or payload gives 409. Every list is server-paged and supports relevant text/status filters.
+
+| Endpoint | Contract |
+| --- | --- |
+| GET /finishing-tasks, GET /finishing-tasks/:id | Eligible handoffs, task versions/status and source. Details include decisions, inspection and permitted issues. |
+| POST /finishing-tasks/:id/{receive,assign,claim,start,complete,confirm-no-work,add-note,urgent,request-cancel,respond-cancel,accept} | Exact command schemas in shared/fulfillment.ts. Assignment takes finisherId or null; cancellation takes note and response boolean. Inspection takes integer accepted, rejected, short and note. |
+| GET /finished-goods, GET /finished-goods/:id | Paged stock by lot. Details show source, acceptance and movements. Search accepts sales/production code, product and customer. |
+| POST /fulfillment-sources/:id/report-issue | Handoff ID, stage FINISHING or WAREHOUSE, issueType, note, optional urgency and selected recipients. |
+| GET /workflow-issues, POST /workflow-issues/:id/{resolve-issue,cancel-issue} | Reporter/recipient inbox. Only the allowed actor closes an OPEN issue. |
+| GET /sales-orders/:id/progress, GET /dispatch-queue | Active product quantities and blocker reasons, current order/dispatch/shipment statuses and server-derived readiness. |
+| POST /sales-orders/:id/dispatch | WAREHOUSE submits method, address and note. Server allocates and records the complete order. |
+| GET /warehouse-dispatches, GET /warehouse-dispatches/:id | Slips, snapshots, product lines and history. AWAITING_SHIPMENT lists eligible slips with no effective shipment. |
+| POST /warehouse-dispatches/:id/{reverse-dispatch,create-shipment} | WAREHOUSE reverses a slip before physical handoff. Sales creates shipment with receiver snapshot, carrier, tracking code, package/weight/COD fields and note. |
+| GET /shipments, GET /shipments/:id | Status/search filters, history, source slip lines and checked return outcomes. |
+| POST /shipments/:id/{register,schedule-pickup,pick-up,start-delivery,deliver,fail-delivery,start-return,receive-return,cancel-shipment} | Explicit source transitions. Failure, transfer to returns and cancellation require a reason. |
+| POST /shipments/:id/inspect-return | Sales submits one disposition per dispatch line and a reason, via `{lines:[{lineId,disposition}],note,requestId,version}`. Dispositions are RESTOCKED, SCRAPPED and CUSTOMER_HOLD. |
+
+The `fulfillment` change event uses a workspace marker. It carries no task, customer or shipment ID. New and late-linked print handoffs emit the same marker. Sales changes retain their existing order/version events.
 
 ## Phase 02B production
 
@@ -21,11 +42,11 @@ Action fields: `dispatch`, `accept`, `wait-print`, `start`, `plate-receive` have
 
 `urgent` takes `isUrgent,reason`; `plate-send` takes optional note; `plate-report` requires reason; `plate-reissue` requires note. `issue-report` takes type PLATE/MACHINE/PRINT/SHIPPING/RETURN/GENERAL, message, optional recipientUserIds/recipientRoles, urgent. Default recipients follow source policy, with creator included for plate issues. `issue-assign` takes issueId and nonempty selected user/role recipients; `issue-resolve` and `issue-cancel` take issueId. Source production issue callables admit seven roles (excluding WAREHOUSE); recipient checks do not bypass that role gate. `cancel-request` takes reason; `cancel-respond` takes cancellationId, boolean accept and reason. `comment` takes content and requires commercial/design or assigned-printer authority. All text/count bounds live in shared/production.ts.
 
-`link-products` takes `{items:[{productionItemId,allocations:[{id,salesItemId,quantity,kind,sourceAllocationId}]}]}` for an existing official item, including after printing. It only appends new links, checks membership/design/conservation, reserves quantity and creates missing handoffs atomically. Numeric late links supersede the old standalone handoff without removing it. Each item’s numeric allocation total equals its product quantity. TRACE is exactly zero. OUTPUT consumes remaining requested BAG quantity. REPRINT requires the original OUTPUT allocation in a PRINTED source run and does not add requested-output quantity. Supplemental/reprint order records require sourceOrderId and runReason.
+`link-products` takes `{items:[{productionItemId,allocations:[{id,salesItemId,quantity,kind,sourceAllocationId}]}]}` for an existing official item, including after printing. It only appends new links, checks membership/design/conservation, reserves quantity and creates missing handoffs atomically. Numeric late links can supersede the old standalone handoff before its first receipt. A received handoff blocks supersession. Each item’s numeric allocation total equals its product quantity. TRACE is exactly zero. OUTPUT consumes remaining requested BAG quantity. REPRINT requires the original OUTPUT allocation in a PRINTED source run and does not add requested-output quantity. Supplemental/reprint order records require sourceOrderId and runReason.
 
 States implemented: DRAFT → WAITING_ACCEPTANCE → ACCEPTED → optional WAITING_PRINT → PRINTING → PRINTED. Pre-print cancellation is a separate pending request followed by the assigned printer's response. Assigned PRINTER alone accepts/ACKs/starts/completes/responds. Start does not depend on plate readiness or current nonblocking issues. Technical roles cannot revise after print begins. No arbitrary status-patch endpoint exists.
 
-Completion returns `PENDING_02C` handoffs, never stock or a completed finishing task. A no-finishing product still needs the future explicit no-work checkpoint. Print-image metadata has no upload bytes/URLs and registry IDs remain unavailable until Phase 03.
+Completion returns `PENDING_02C` handoffs, never stock or a completed finishing task. A no-finishing product still needs the explicit Phase 02C no-work checkpoint. Print-image metadata has no upload bytes/URLs and registry IDs remain unavailable until Phase 03.
 
 Same-origin `/api`, JSON only, UTF-8. Every response is `Cache-Control: no-store, private`. No CORS credentials. Error body: `{ "error": { "code": "VERSION_CONFLICT", "message": "..." } }`; validation adds field paths/messages. 400 invalid input, 401 unauthenticated, 403 authority/Origin/CSRF failure, 404 absent endpoint/entity, 409 duplicate/stale version/bootstrap completed, 413 body >64 KiB, 415 non-JSON mutation, 429 rate limit, 503 bounded password worker overload/readiness. No stack, SQL, hash or secret is returned.
 

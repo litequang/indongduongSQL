@@ -33,3 +33,18 @@ Phase 02B implements those production policies. Creator alone reads/edits their 
 Issue type reporter policy is in shared/production.ts. Recipients are checked against active users and supported roles. Only reporter cancels OPEN issues. Among the seven roles admitted by the source production callable (all except WAREHOUSE), a selected user or recipient role resolves; upward management inheritance only applies to a selected management role. A selected specialist never grants management authority. FINISHER can report GENERAL issues and act on its selected issues. WAREHOUSE reads official production only; warehouse issue/workflow actions belong to 02C. Commercial/design roles and assigned PRINTER can comment; comments confer no workflow authority.
 
 Phase 02A customer, sales and sample reads mirror authenticated-active Firestore reads. Sales rules and callable transitions permit commercial roles across orders. Draft item updates require membership of the target draft. Import jobs and their row payloads are restricted to the actor who staged them, including for management accounts. Roles are derived from the live session. A valid stale version receives a 409 for review.
+
+## Phase 02C fulfillment
+
+| Action | Authority |
+| --- | --- |
+| Receive, claim, start, complete, confirm no-work, respond to finishing cancellation | FINISHER. An assigned task is restricted to its assigned user. Only the claimant starts, completes or responds. |
+| Assign ready task, change priority, request finishing cancellation | Developer, Admin, Manager, Designer or Sale. A claimed task needs its claimant's response. |
+| Product acceptance | Sale and management per source callable, or the assigned/claiming FINISHER. Review requires task completion/no-work or an ended finishing cancellation. |
+| Stock and dispatch review | WAREHOUSE and commercial roles. FINISHER can view their scoped lots. |
+| Execute or reverse whole-order dispatch | Exact WAREHOUSE. |
+| Create or advance shipment, inspect returned lines | Sale and management. WAREHOUSE can read delivery status and source slips. |
+| Report fulfillment issue | Commercial/design roles or the in-scope FINISHER for finishing. WAREHOUSE or commercial roles for an accepted lot. |
+| Close issue | Reporter cancels. Selected user/role resolves. Upward inheritance applies to management recipients only. |
+
+All reads and writes require active sessions. The global fulfillment feed emits an opaque workspace invalidation. The applicable list/detail endpoint separately checks its role and object scope.

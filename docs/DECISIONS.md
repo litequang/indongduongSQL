@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-11-27 — Phase 02C downstream transactions
+
+A FINISHER receives a valid print handoff once. The task UUID is the handoff UUID. Numeric late linking remains available until a standalone handoff is received. After receipt, the production transaction rejects supersession and preserves the task and any acceptance. Zero TRACE, RELEASED allocations and superseded rows cannot enter the finishing queue. A single task records either specialist completion or explicit no-work confirmation. Source cancellation can end the finishing task, with a recorded request/response; warehouse quantities still require a separate inspection.
+
+Inspection records accepted, rejected and short quantities whose sum equals the handoff quantity. Rejection or shortage requires a reason. Only accepted quantity creates a lot and a stock movement. One receipt per handoff and the ordered BAG cap apply transactionally. Non-printing items wait for a confirmed physical source. REPRINT rows retain the source allocation and traceable original inspection. Acceptance stays blocked until the owner approves operational replacement rules.
+
+Use whole-order dispatch against locked accepted lots. The server allocates exact demand per active item, in lot creation order. The same transaction writes the numbered slip, snapshot, movements and sales progress. Only WAREHOUSE executes or reverses dispatch. Reversal remains available before possession transfers to a carrier. A cancellation permitted by the shipment graph leaves the existing slip available for a new shipment.
+
+The source commercial roles create shipments, apply the source transition graph and inspect returns. An active dispatch has one effective shipment. Returned lines preserve the quantity on the dispatch and record restock, scrap or hold individually. Only explicit restock increases available quantity. A fully restocked dispatch may be followed by a new whole-order dispatch. A mixed/scrapped/held return keeps the active dispatch for follow-up. The owner must confirm any replacement workflow for stock that cannot be restored. Reopen is blocked when fulfillment history exists.
+
 ## 2026-11-27 — Phase 02B quantities and traceability
 
 The PC task authorizes 02B after 02A acceptance. Production quantities are integer BAG units; technical sheets and actual/spoilage sheets remain separate. No sheet-to-product conversion is implemented. A production item can join several sales products, and one sales product can span multiple runs. OUTPUT quantities consume the sales request cap only after dispatch. Draft proposals do not reserve capacity. The state-first transaction lock serializes capacity checks, codes, cancellation reconciliation, audit and invalidations. Cancellation releases only the cancelled run's allocations and retains their rows.

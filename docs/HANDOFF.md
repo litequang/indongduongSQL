@@ -1,35 +1,53 @@
-# PC / Cloud handoff
+# Bàn giao PC / Cloud
 
-Owner: **PC**, 2026-11-27. Branch: **codex/phase-02b-production**. Base: accepted Cloud Phase 02A `f6490410d9c8b3cf0deb47c527622a8df6384740`. Tested code: **d5383080644b06a34cc3f09db78de3196f098e55**. This documentation-only checkpoint follows that immutable code SHA. PC completes acceptance of 02A and implementation/verification of 02B, then releases branch ownership after this handoff commit. No parallel writer or delegated agent was used. Phase 02C needs a new task and its own branch. Main/PR #1 were not merged; the original Firebase repository and other projects were untouched.
+Cloud thực hiện Phase 02C ngày 27/11/2026 trên `codex/phase-02c-fulfillment`. Base `codex/phase-02b-production` tại `54e14508acb40033ac5005eb64990007b22c1632` bao gồm tài liệu sau checkpoint PC đã nghiệm thu. [PR #2](https://github.com/litequang/indongduongSQL/pull/2) là bản nháp cho chủ dự án xem xét. Checkpoint code `ddf3e88f415a7df0a499bb011c3a2a1b0ef56a95`. [GitHub Actions](https://github.com/litequang/indongduongSQL/actions/runs/45933985370) PASS 37/37 ca MariaDB/HTTP và 16/16 ca Chromium. Báo cáo có exit code, kết quả restart và giới hạn kiểm thử. [PHASE_02C_TEST_REPORT.md](PHASE_02C_TEST_REPORT.md)
 
-## Delivered and files
+## Phần đã triển khai
 
-- 02A Windows acceptance: npm ci, actual MariaDB upgrade, complete Foundation/02A regression, compiled process persistence, browser screenshots. [PHASE_02A_PC_ACCEPTANCE.md](PHASE_02A_PC_ACCEPTANCE.md). Optional local:db now waits for readiness.
-- 02B Designer queue/technical review, quick parser/unique printer matching, owner-private SQL drafts, bounded idempotent batch dispatch, unique LIN codes, independent/split/merged M:N product allocation and late sales linking.
-- Assigned-printer accept/ACK/start/complete, technical revisions/reassignment, parallel plate send/receive/damage/reissue, urgent flags, recipient-scoped issues and explicit cancellation request/response, immutable history/comments/audit.
-- Actual/spoilage sheets, source-preserving supplemental/reprint runs and pending 02C handoffs. Zero TRACE is never output; replacement does not add ordered product output. Late linking retains superseded handoff history and counts design use once. No fake finishing completion/stock/shipment.
-- Owners: shared/production.ts and ported parser/matcher; server/routes/production.ts, repositories/production.ts, services/production-workflow.ts; sales cancellation and scoped invalidations; src/components/production/ and minimal App/module wiring; integration/e2e/reset/restart/CI scripts. DATABASE_SCHEMA/API_CONTRACT/AUTHORIZATION_MATRIX/DECISIONS describe the contract. [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) owns coverage.
+- Gia công theo bàn giao in và sản phẩm. Nhận việc có phân công hoặc claim, bắt đầu, hoàn thành, xác nhận không gia công, ghi chú, ưu tiên, hoàn tất yêu cầu hủy và sự cố.
+- Nghiệm thu theo số đạt, không đạt và thiếu. Kho ghi một lô theo lần nghiệm thu có số đạt dương và theo dõi biến động. Handoff cũ, nguồn sản xuất độc lập, lệnh tách/ghép và liên kết muộn giữ được truy xuất.
+- Xuất nguyên đơn bởi WAREHOUSE, có phiếu và các dòng nguồn. Bán hàng tạo vận đơn, xác nhận bàn giao, giao thành công, thất bại hoặc chuyển hoàn; có kiểm tra hàng hoàn theo từng dòng.
+- Tiến độ đơn bán dẫn xuất từ thiết kế, phân bổ, in, gia công, kho và giao hàng. Lịch sử sau khi xuất kho được bảo toàn.
+- `006_fulfillment.sql` đi tiếp sau 005. Dùng lại session, CSRF, audit và sequence theo thứ tự commit. API và quyền trong [API_CONTRACT.md](API_CONTRACT.md) và [AUTHORIZATION_MATRIX.md](AUTHORIZATION_MATRIX.md). Schema trong [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
-## Migrations and environment
+## Tiếp nhận trên PC
 
-Added **004_production.sql** and **005_production_link_handoff.sql** after 003; 001–003 checksums unchanged. 004 creates production, allocation, technical/revision, plates/issues/cancellation, comments, receipts and handoffs; 005 adds superseded handoffs/design-print ledger. Dev DB migrated 001/002 → 003 → 004 → 005; reruns no-op. Fresh and upgrade/concurrent-runner checks pass on a separate real MariaDB 11.4.9 instance. The initial unpublished 004 failure and explicit inspected repair are recorded in the test report; no destructive reset or silent partial-DDL recovery. Cold Windows migrations use a bounded 60-second named-lock wait.
+```powershell
+git fetch origin refs/heads/codex/phase-02c-fulfillment:refs/remotes/origin/codex/phase-02c-fulfillment
+git status --short
+git log -6 --oneline origin/codex/phase-02c-fulfillment
+git rev-parse origin/codex/phase-02c-fulfillment
+```
 
-Windows PowerShell, Node 22.22.2/npm 10.9.7, dedicated MariaDB 11.4.9 at 127.0.0.1:3307. Dev/test accounts and schemas differ. Ignored private .env and admin helper files are PC-only; do not copy secrets to Cloud or Git. Fresh-probe credentials are generated and their separate instance is shut down. Main project DB survives an actual graceful shutdown/start with identical snapshots/session count. Existing MySQL and other projects were not modified. Local workspace E:\CODE\indongduongSQL; app URL **http://localhost:4100**. Owner dev data/setup remains separate from synthetic tests.
+Khi thư mục làm việc sạch và nhánh chưa có cục bộ, dùng `git switch --track origin/codex/phase-02c-fulfillment`. Nếu đã có nhánh, kiểm tra các commit cục bộ rồi `git switch codex/phase-02c-fulfillment` và `git pull --ff-only`. Đối chiếu SHA từ báo cáo. Dùng Node 22.22.2, npm 10.9.7 và MariaDB 11.4.9. Dev và test dùng tên database, tài khoản và mật khẩu riêng. Giữ bí mật cấu hình PC trong tệp `.env` bị bỏ qua bởi Git.
 
-## Executed evidence
+```powershell
+npm ci
+npm run db:migrate
+npm run typecheck
+npm run lint
+npm test
+npm run test:legacy
+$env:ALLOW_TEST_DATABASE = "1"
+npm run test:integration
+npm run build
+npm run check:runtime
+npm run test:restart
+npx playwright install chromium
+npm run test:e2e
+```
 
-All exit **0**: npm ci; typecheck; lint; unit **4/4**; preserved legacy groups **5/5**; real MariaDB/HTTP integration **30/30**; build; runtime/PWA exclusion; migration fresh/upgrade/concurrency/rerun; graceful MariaDB restart; two compiled Node processes preserving session and customer/sales/design/full production details; Playwright **14/14**, six viewports × two themes and axe. 02B captures 72 synthetic screenshots per matrix run; Foundation and 02A retain their coverage. Gitleaks staged/history and git diff --check pass. Screenshots/logs/traces are ignored local artifacts or short-lived CI artifacts, never private production data. [PHASE_02B_TEST_REPORT.md](PHASE_02B_TEST_REPORT.md)
+Cấu hình `TEST_DB_NAME`, `TEST_DB_USER`, `TEST_DB_PASSWORD` trỏ tới dữ liệu tổng hợp riêng. Chạy integration, restart và browser theo thứ tự nếu dùng chung test DB. Dùng `npm run local:db` nếu sử dụng MariaDB dev theo cấu hình của dự án. Khởi động `npm run dev` và mở `http://localhost:4100`.
 
-Remote Ubuntu CI [45926107238](https://github.com/litequang/indongduongSQL/actions/runs/45926107238) **completed success** at exactly `d5383080644b06a34cc3f09db78de3196f098e55`. All steps passed, including real MariaDB, compiled restart, full Playwright and browser-evidence upload. Documentation-only handoff pushes skip CI; this tested code SHA remains the immutable reference.
+## Chạy thử từ đơn đến giao hàng
 
-Known nonblocking baseline: standalone legacy prompt14 permission test FAIL exit 1 because it expects MANAGER warehouse dispatch; the current exact WAREHOUSE policy is intentionally unchanged. Firebase emulator suites SKIP. Vendor size/Zod annotation, deprecated ESLint and Playwright color-environment warnings remain nonblocking. Physical devices, Hawk Host account/runtime/proxy/limits and live R2 are LOCAL_VALIDATION_REQUIRED, not passed by browser emulation.
+1. SALE tạo khách thử có điện thoại và địa chỉ, tạo đơn có ít nhất hai sản phẩm cần in. Chọn một sản phẩm cần gia công, một sản phẩm không cần gia công. Xác nhận đơn.
+2. DESIGNER nhập và xác nhận kỹ thuật, tạo lệnh từ sản phẩm, gửi cho PRINTER. Có thể chia một sản phẩm thành nhiều lệnh hoặc ghép các sản phẩm của nhiều đơn. Nhập số lượng sản phẩm theo túi và số tờ in theo thông số in.
+3. PRINTER nhận lệnh, xác nhận revision đúng, bắt đầu in rồi ghi số tờ thực in và tờ hỏng. FINISHER mở Gia công, tiếp nhận từng bàn giao. Với dòng cần gia công, nhận việc, bắt đầu và hoàn thành. Với dòng còn lại, bấm **Xác nhận không cần gia công**.
+4. Người có quyền nghiệm thu nhập số túi đạt, không đạt, thiếu. Kiểm tra kho chỉ ghi nhận số đạt. Để một sản phẩm chưa nghiệm thu và xác nhận WAREHOUSE thấy lý do chưa xuất.
+5. Nghiệm thu đủ các dòng còn hiệu lực. WAREHOUSE kiểm tra checklist, chọn phương thức và địa chỉ rồi xác nhận **Xuất nguyên đơn**. Mở phiếu đối chiếu nguồn và tồn. SALE mở **Giao hàng**, tạo vận đơn, xác nhận bàn giao, bắt đầu giao và giao thành công. Đơn phải chuyển **Hoàn thành**.
+6. Với đơn thử riêng, báo giao thất bại, chuyển hoàn rồi nhận hàng. Kiểm tra tồn vẫn giữ nguyên đến khi ghi nhận kiểm tra hàng hoàn. Chọn tình trạng cho từng dòng và đối chiếu lượng nhập lại trên sổ kho.
 
-## Pending and resume
+## Quyết định còn mở
 
-No 02C finishing/stock/dispatch/shipping or Phase 03 upload/notifications/backup execution is included. Device Blob/offline attachment drafts are deferred; acknowledged SQL metadata drafts are implemented and private browser caches remain memory-only. Read [PHASE_02C_HANDOFF.md](PHASE_02C_HANDOFF.md) before the next authorized phase. Owner policies pending: shared-phone identity, import retention, direct non-printing routes and replacement acceptance/rejection operations. None were silently changed.
-
-1. Fetch origin, inspect clean/dirty state, branch/upstream/history and this tested SHA. Preserve local work. Claim a distinct task branch for Cloud; never force-push or auto-merge main/PR #1.
-2. Use committed Node version/lockfile and isolated MariaDB credentials. `npm ci`, `npm run db:migrate`. Do not edit published migrations or repair partial DDL without inspecting the checkpoint/schema.
-3. Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:legacy`. With `ALLOW_TEST_DATABASE=1`, run `npm run test:integration`, then `npm run build`, `npm run check:runtime`, `npm run test:restart`, `npm run test:e2e`. Never integration/E2E concurrently on one test DB.
-4. PC local start: `npm run local:db`, `npm run dev`, open http://localhost:4100. If setup is open, owner reads SETUP_SECRET privately from .env and creates their own Developer; no default credential is provided. Create synthetic/local Designer, Printer and Sale accounts for the owner walk-through; do not copy test DB accounts into dev.
-5. Walk through sales confirm → Designer queue/technical review → save draft/F5/reopen → dispatch → assigned Printer in a second browser accepts/ACKs/starts/completes. Test revision before start, pending cancellation, plate issue/reissue, partial batch retry and source-linked reprint. PRINTED stops at pending 02C; no stock or shipment should appear.
+Nguồn vật lý của sản phẩm không cần in và quy tắc đối soát nghiệm thu REPRINT vẫn chờ quyết định. Hàng hoàn hỏng hoặc giữ riêng cần xử lý nghiệp vụ tiếp theo để giải phóng phiếu đang mở. Chính sách khách hàng dùng chung số điện thoại và thời hạn lưu chi tiết import vẫn chờ chủ dự án. Xem [PHASE_03_HANDOFF.md](PHASE_03_HANDOFF.md) khi Phase 03 được giao.

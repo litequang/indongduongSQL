@@ -1,6 +1,6 @@
 # Feature parity matrix
 
-Canonical scope inventory through Phase 02B. CORE_VERIFIED covers the implemented foundation, not all source feature options. UI visibility is never backend authorization. `legacy/firebase/` is reference only.
+Canonical scope inventory through Phase 02C. CORE_VERIFIED covers the implemented foundation, not all source feature options. UI visibility is never backend authorization. `legacy/firebase/` is reference only.
 
 | Feature / source owner               | Required invariant                                                                       | SQL phase | Status                                              |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- | --------- | --------------------------------------------------- |
@@ -9,12 +9,12 @@ Canonical scope inventory through Phase 02B. CORE_VERIFIED covers the implemente
 | Staff / provisioning service         | 8 roles; Admin cannot administer Admin/Developer                                         | 01        | CORE_VERIFIED                                       |
 | Profile/password/session             | Self fields only; revoke sessions on sensitive changes                                   | 01        | CORE_VERIFIED                                       |
 | Settings / ConfigContext             | Authorized writes, explicit remote errors and concurrency                                | 01        | CORE_VERIFIED                                       |
-| Permissions / rules + workflowAuth   | Backend action/object policy; specialist roles remain exact                              | 01/02     | FOUNDATION_AND_PRODUCTION_IMPLEMENTED / 02C_PENDING |
+| Permissions / rules + workflowAuth   | Backend action/object policy; specialist roles remain exact                              | 01/02     | IMPLEMENTED_THROUGH_02C |
 | Custom role/user permission editor   | Do not permit UI permission overrides to bypass workflow authority                       | 02/04     | NOT_MIGRATED                                        |
 | Customers / customerRepository       | Commercial writes, active identity dedup, soft delete, history, audit                    | 02A       | IMPLEMENTED                                         |
 | CSV/XLSX / customer-import           | Normalize, preview, skip or explicit update, actor-scoped job and row results            | 02A       | IMPLEMENTED                                         |
-| Sales orders / salesOrderRepository  | Draft, confirm, cancel and audit. Privileged reopen requires a delivered/completed order | 02A/02C   | SALES_IMPLEMENTED / DOWNSTREAM_PENDING              |
-| Sales products                       | BAG quantity, stable item UUIDs, explicit production and finishing requirements          | 02A/02C   | SALES_IMPLEMENTED / FULFILLMENT_PENDING             |
+| Sales orders / salesOrderRepository  | Draft, confirm, cancel and audit. Privileged reopen requires a delivered/completed order | 02A/02C   | IMPLEMENTED_WITH_FULFILLMENT |
+| Sales products                       | BAG quantity, stable item UUIDs, explicit production and finishing requirements          | 02A/02C   | IMPLEMENTED / NON_PRINTING_SOURCE_POLICY_PENDING |
 | Saved designs                        | Immutable metadata versions, selection and reuse, audit                                  | 02A       | IMPLEMENTED                                         |
 | Design image references              | Private registry ID on the design version                                                | 03        | ARCHITECTURE_ONLY                                   |
 | Designer queue / QuickOrderComposer  | Technical instruction, priority, paged sources and unique/confident @printer matching    | 02B       | IMPLEMENTED                                         |
@@ -26,20 +26,20 @@ Canonical scope inventory through Phase 02B. CORE_VERIFIED covers the implemente
 | Plate/new/old/damage/reissue         | Parallel plate state; source action/object authority; history                            | 02B       | IMPLEMENTED                                         |
 | Printer assignment/acceptance        | Assigned business user; safe pre-start reassignment                                      | 02B       | IMPLEMENTED                                         |
 | Revision ACK/start                   | Exact latest revision; pending cancellation blocks start                                 | 02B       | IMPLEMENTED                                         |
-| Print completion                     | Assigned printer; actual sheets and durable PENDING_02C handoffs                         | 02B/02C   | PRINT_IMPLEMENTED / FINISHING_EXECUTION_PENDING_02C |
-| Reprint/supplemental runs            | New source-linked run; replacement excluded from requested-output totals                 | 02B       | IMPLEMENTED / ACCEPTANCE_RECONCILIATION_02C         |
+| Print completion                     | Assigned printer; actual sheets and durable PENDING_02C handoffs                         | 02B/02C   | IMPLEMENTED |
+| Reprint/supplemental runs            | New source-linked run; replacement excluded from requested-output totals                 | 02B       | SUPPLEMENTAL_IMPLEMENTED / REPLACEMENT_ACCEPTANCE_PENDING |
 | Cancellation                         | Separate request/assigned-printer response; release only own allocations                 | 02B       | IMPLEMENTED                                         |
 | Production issues                    | Reporter cancels; selected recipients resolve/reassign; nonblocking                      | 02B       | IMPLEMENTED                                         |
-| Urgent flags                         | Order and product metadata, with existing transition policy                              | 02A/B/C   | SALES_IMPLEMENTED / DOWNSTREAM_PENDING              |
-| Product finishing / finishing_tasks  | Claim/complete; explicit no-work checkpoint                                              | 02C       | NOT_MIGRATED                                        |
-| Legacy order-level finishing         | Reconcile with product-centric V2 before porting; no parallel legacy flow                | 02C       | NOT_MIGRATED                                        |
-| Finished goods                       | Aggregate accepted product quantities; exact remaining stock                             | 02C       | NOT_MIGRATED                                        |
-| Warehouse issues                     | Observed issue only; supplemental production decided upstream                            | 02C       | NOT_MIGRATED                                        |
-| Dispatch                             | WAREHOUSE exact role; all required sibling products ready                                | 02C       | NOT_MIGRATED                                        |
-| Shipping/ViettelPost settings        | Legal transition graph; sales authority; inspected returns                               | 02C       | NOT_MIGRATED                                        |
+| Urgent flags                         | Order and product metadata, with existing transition policy                              | 02A/B/C   | IMPLEMENTED |
+| Product finishing / finishing_tasks  | Claim/complete; explicit no-work checkpoint                                              | 02C       | IMPLEMENTED |
+| Legacy order-level finishing         | Reconcile with product-centric V2 before porting; no parallel legacy flow                | 02C       | REPLACED_BY_PRODUCT_WORKFLOW |
+| Finished goods                       | Aggregate accepted product quantities; exact remaining stock                             | 02C       | IMPLEMENTED_FOR_ELIGIBLE_OUTPUT |
+| Warehouse issues                     | Observed issue only; supplemental production decided upstream                            | 02C       | IMPLEMENTED |
+| Dispatch                             | WAREHOUSE exact role; all required sibling products ready                                | 02C       | IMPLEMENTED |
+| Shipping/ViettelPost settings        | Legal transition graph; sales authority; inspected returns                               | 02C       | MANUAL_LOGISTICS_IMPLEMENTED / EXTERNAL_API_DEFERRED |
 | Comments                             | Conversation cannot replace ACK/issues/cancellation                                      | 02B       | IMPLEMENTED                                         |
 | Notifications/sound/voice            | Recipient scoped; private cache never persisted by SW                                    | 03        | NOT_MIGRATED                                        |
-| Audit log                            | Transactional Foundation, customers, import, sales, design and production events         | 01/02/03  | FOUNDATION_02A_02B_IMPLEMENTED / 02C_PENDING        |
+| Audit log                            | Transactional Foundation, customers, import, sales, design and production events         | 01/02/03  | IMPLEMENTED_THROUGH_02C |
 | Statistics/reports/export            | Backend authorized datasets; Recharts when real reporting exists                         | 02/03     | NOT_MIGRATED                                        |
 | Image uploads/read/delete            | Private R2; validated staging; authorized registry                                       | 03        | ARCHITECTURE_ONLY                                   |
 | Provider routing/failover            | Explicit new-project R2 config; no Firebase fallback                                     | 03        | ARCHITECTURE_ONLY                                   |
