@@ -1,5 +1,9 @@
 # Test evidence index
 
+- [Phase 03 PC verification](PHASE_03_TEST_REPORT.md): 02C acceptance on Windows, migration 007 fresh/upgrade/concurrency, real MariaDB/API, actual image bytes and local S3 protocol, device Blob/F5/logout, image backup/verify/missing-only restore and recipient notifications. Dedicated live R2 remains LOCAL_VALIDATION_REQUIRED by the owner's explicit local-testing choice.
+
+  [Phase 03 CI 45964530282](https://github.com/litequang/indongduongSQL/actions/runs/45964530282) completed success at immutable code `9231886544ec92415e7d9b8dce36f070a76c2489`: API 46/46, Playwright 19/19, unit/legacy/build/runtime/restart and evidence upload. The following handoff is documentation only.
+
 - [Phase 02C Cloud verification](PHASE_02C_TEST_REPORT.md) records migration 006, API/MariaDB, Chromium and CI for fulfillment.
 
 - [Source baseline](BASELINE_TEST_REPORT.md): source build/typecheck pass, 5/6 local groups pass; obsolete manager-dispatch assertion fails; emulator suites not run.

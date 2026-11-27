@@ -1,8 +1,13 @@
 # Project status
 
-Cloud, 2026-11-27. Branch `codex/phase-02c-fulfillment` starts at the Phase 02B production handoff `54e14508acb40033ac5005eb64990007b22c1632`. Phase 00, 01, UI Foundation and 02A/B are inherited. See [HANDOFF.md](HANDOFF.md) and [PHASE_02C_TEST_REPORT.md](PHASE_02C_TEST_REPORT.md) for the code checkpoint and executed evidence.
+PC, 2026-11-27. Branch `codex/phase-03-private-operations` starts at Cloud 02C handoff `5d5af17c26ad08fc844ece0c1a6f22e00692248e`, tested Cloud code `ddf3e88f415a7df0a499bb011c3a2a1b0ef56a95`. Tested PC code **9231886544ec92415e7d9b8dce36f070a76c2489**. Owner authorized the next phase and explicitly selected local implementation/testing with R2 dev acceptance pending. Phase 00, 01, UI Foundation and 02A/B/C are inherited. [HANDOFF.md](HANDOFF.md) records the immutable checkpoint and remote CI; [TEST_REPORT.md](TEST_REPORT.md) indexes evidence.
 
 ## Delivered
+
+- Phase 03 local implementation: owner/target-scoped upload tickets, actual image decoding/normalization, immutable conditional R2 writes, active registry FKs and relationship-authorized no-store downloads. Design versions and production print images can hold verified attachments; official runs are immutable and reassignment revokes former-printer image access.
+- Explicit device File drafts recover on reopening the same saved SQL draft, with quota/network errors and logout/session-expiry purge. API/session data remain memory-only and outside service-worker caches.
+- Transactional recipient notifications with private read state, pagination, focus/reconnect polling and optional sound/speech UI preferences. No external messaging or browser push service.
+- Developer image backup/coverage/verify/missing-only restore jobs, bounded 500-ID groups and one image per request, per-image result review, retry/resume and old unreferenced-image cleanup. Migration 007 follows unchanged 001–006. These image jobs do not replace operational MariaDB backups. [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md) owns lifecycle/limits.
 
 - Phase 00 and Phase 01 with UI Foundation are inherited from the PC branch.
 - Customers have commercial CRUD, soft retirement, indexed duplicate identity, contact and external reference fields, server-side search/filter/sort/page, order history, per-record audit and optimistic versions.
@@ -21,4 +26,4 @@ Cloud, 2026-11-27. Branch `codex/phase-02c-fulfillment` starts at the Phase 02B 
 
 Non-printing products remain commercially confirmed and show the required physical source decision. REPRINT handoffs remain traceable and blocked from acceptance until the owner confirms how to reconcile the original, rejected and replacement quantities. Mixed/damaged/held returns keep the outstanding dispatch open for follow-up. Replacement and reconciliation of those held or lost goods need operating instructions.
 
-Phase 03 owns private R2, Blob drafts, backups and notifications. Physical devices and Hawk Host remain LOCAL_VALIDATION_REQUIRED. Shared customer phone identity and import retention remain owner decisions. [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) records detailed coverage.
+Phase 03 code is implemented and tested locally with real MariaDB, real selected/decoded files and isolated object transport. Dedicated R2 primary/backup buckets are unavailable by owner confirmation, so live R2 acceptance remains LOCAL_VALIDATION_REQUIRED; the app fails explicitly when storage is unconfigured. Physical devices/audio and Hawk Host/native sharp support also remain LOCAL_VALIDATION_REQUIRED. Phase 04 source removal/full parity and Phase 05 deployment need a new task. Shared customer phone identity and import retention remain owner decisions. [FEATURE_PARITY_MATRIX.md](FEATURE_PARITY_MATRIX.md) records detailed coverage.

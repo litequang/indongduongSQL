@@ -1,25 +1,35 @@
 # Bàn giao PC / Cloud
 
-Cloud thực hiện Phase 02C ngày 27/11/2026 trên `codex/phase-02c-fulfillment`. Base `codex/phase-02b-production` tại `54e14508acb40033ac5005eb64990007b22c1632` bao gồm tài liệu sau checkpoint PC đã nghiệm thu. [PR #2](https://github.com/litequang/indongduongSQL/pull/2) là bản nháp cho chủ dự án xem xét. Checkpoint code `ddf3e88f415a7df0a499bb011c3a2a1b0ef56a95`. [GitHub Actions](https://github.com/litequang/indongduongSQL/actions/runs/45933985370) PASS 37/37 ca MariaDB/HTTP và 16/16 ca Chromium. Báo cáo có exit code, kết quả restart và giới hạn kiểm thử. [PHASE_02C_TEST_REPORT.md](PHASE_02C_TEST_REPORT.md)
+PC, 27/11/2026. Nhánh **codex/phase-03-private-operations**, base Cloud 02C **5d5af17c26ad08fc844ece0c1a6f22e00692248e**. Code Cloud đã test `ddf3e88f415a7df0a499bb011c3a2a1b0ef56a95`. Checkpoint code PC **9231886544ec92415e7d9b8dce36f070a76c2489** đã push; commit bàn giao tài liệu đi sau SHA code bất biến này. PC là writer duy nhất, không dùng agent song song và giải phóng ownership sau commit bàn giao. Không merge main/PR #1/#2, không sửa repo Firebase gốc/Thờ Phượng Pro, không deploy.
 
-## Phần đã triển khai
+Chủ dự án giao làm phần tiếp theo sau Cloud 02C và xác nhận **chưa có R2 dev — làm và kiểm thử cục bộ, ghi rõ bước R2 còn chờ**. Triển khai Phase 03 cục bộ hoàn tất; nghiệm thu bucket thật vẫn **LOCAL_VALIDATION_REQUIRED**. Phase 04 và deployment cần nhiệm vụ mới.
 
-- Gia công theo bàn giao in và sản phẩm. Nhận việc có phân công hoặc claim, bắt đầu, hoàn thành, xác nhận không gia công, ghi chú, ưu tiên, hoàn tất yêu cầu hủy và sự cố.
-- Nghiệm thu theo số đạt, không đạt và thiếu. Kho ghi một lô theo lần nghiệm thu có số đạt dương và theo dõi biến động. Handoff cũ, nguồn sản xuất độc lập, lệnh tách/ghép và liên kết muộn giữ được truy xuất.
-- Xuất nguyên đơn bởi WAREHOUSE, có phiếu và các dòng nguồn. Bán hàng tạo vận đơn, xác nhận bàn giao, giao thành công, thất bại hoặc chuyển hoàn; có kiểm tra hàng hoàn theo từng dòng.
-- Tiến độ đơn bán dẫn xuất từ thiết kế, phân bổ, in, gia công, kho và giao hàng. Lịch sử sau khi xuất kho được bảo toàn.
-- `006_fulfillment.sql` đi tiếp sau 005. Dùng lại session, CSRF, audit và sequence theo thứ tự commit. API và quyền trong [API_CONTRACT.md](API_CONTRACT.md) và [AUTHORIZATION_MATRIX.md](AUTHORIZATION_MATRIX.md). Schema trong [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+## Đã bàn giao
 
-## Tiếp nhận trên PC
+- Tiếp nhận GitHub/PR #2/CI và hồi quy 02C Windows, giữ nguyên quy tắc gia công/nghiệm thu, xuất nguyên đơn, giao hàng/hàng hoàn và các quyết định nghiệp vụ còn mở.
+- Ticket ảnh owner/target, giải mã/normalize ảnh thực, SHA-256, ghi R2 có điều kiện, registry ACTIVE và FK. Phiên bản thiết kế/lệnh in giữ tham chiếu; ảnh lệnh chính thức bất biến, thợ cũ mất quyền đọc sau đổi phân công.
+- Nháp File thiết bị theo tài khoản/target/slot, F5 khi mở lại cùng nháp SQL đã lưu, xóa khi logout/session hết hạn. API/session vẫn memory-only, ngoài SW. Lỗi dung lượng giữ File; verified upload vẫn thành công nếu dọn nháp thiết bị lỗi. Tải ảnh không ghi đè nội dung vừa nhập.
+- Thông báo transactional theo người nhận, read-state riêng, phân trang, polling visible/focus/reconnect, tùy chọn âm báo/giọng đọc. Không gửi tin ngoài ứng dụng.
+- Developer backup/coverage/verify/khôi phục ảnh thiếu, <=500 ID/nhóm có tiếp nhóm, một ảnh/lượt, xem kết quả từng ảnh, retry/resume và dọn ảnh không tham chiếu. Không ghi đè ảnh đang có hoặc backup sai checksum. Backup ảnh không thay thế backup MariaDB.
+- Files: server/storage/, routes/private-operations.ts, services/notifications.ts, shared image references, src/components/private/, services/device-drafts.ts, thiết kế/composer/lệnh in, frontend startup, tests/API/HTTP transport/browser và CI. [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md), API_CONTRACT, DATABASE_SCHEMA, AUTHORIZATION_MATRIX và DECISIONS mô tả hợp đồng.
 
-```powershell
-git fetch origin refs/heads/codex/phase-02c-fulfillment:refs/remotes/origin/codex/phase-02c-fulfillment
-git status --short
-git log -6 --oneline origin/codex/phase-02c-fulfillment
-git rev-parse origin/codex/phase-02c-fulfillment
-```
+## Migration, môi trường và kiểm thử
 
-Khi thư mục làm việc sạch và nhánh chưa có cục bộ, dùng `git switch --track origin/codex/phase-02c-fulfillment`. Nếu đã có nhánh, kiểm tra các commit cục bộ rồi `git switch codex/phase-02c-fulfillment` và `git pull --ff-only`. Đối chiếu SHA từ báo cáo. Dùng Node 22.22.2, npm 10.9.7 và MariaDB 11.4.9. Dev và test dùng tên database, tài khoản và mật khẩu riêng. Giữ bí mật cấu hình PC trong tệp `.env` bị bỏ qua bởi Git.
+Thêm **007_private_operations.sql**; **001–006 không đổi checksum**. Dev nâng 001–005 lên 006/007, giữ setup/tài khoản/dữ liệu. Test DB riêng có 001–007; instance MariaDB mới riêng, nâng 001/002, concurrent runners và rerun no-op đều PASS. Lần đầu 007 chưa publish lỗi tại inline CHECK sau statement 1; đã kiểm tra checkpoint/schema, giữ DDL hoàn thành và sửa rõ phần còn lại. Không DROP/TRUNCATE/reset database để sửa. [PHASE_03_TEST_REPORT.md](PHASE_03_TEST_REPORT.md)
+
+Windows PowerShell; Node **22.22.2**, npm **10.9.7**, MariaDB **11.4.9** riêng **127.0.0.1:3307**, dev/test khác DB/account. `.env`, option file admin, logs, snapshots, ảnh/object fixtures đều riêng/ignored. Cloud phải tự tạo môi trường, không giả định có DB PC. Không dùng production Firebase/R2/DB/hosting.
+
+PASS exit **0**: npm ci (690 package, audit 691, zero vulnerability); typecheck/lint; unit **5/5** gồm AWS SDK qua HTTP localhost; legacy hỗ trợ **5/5 nhóm**; MariaDB/API **46/46**; build/runtime/PWA; fresh/upgrade/concurrency/rerun; compiled Node restart (fixture 02C riêng **7/7**, rồi hai process so session/business/fulfillment/registry/job/read-state); graceful MariaDB restart, SHA-256 **53 bảng test cùng session không đổi**. Respawn Windows lần đầu chưa sẵn sàng trong vòng chờ; local:db lại và auth/snapshot xác minh thành công, không phục hồi/reset dữ liệu.
+
+Playwright full regression **18/18** và final Phase 03 **3/3**, exit 0. Sáu viewport × sáng/tối, 12 PNG Phase 03 cùng các matrix kế thừa, axe 1366 cả hai theme. Đã xem ảnh thực và sửa nút bị cắt ở 360 px; kiểm tra bounds từng nút, quota thiết bị, input trong lúc upload và HTTP 5xx. Gitleaks staged/history và git diff --check PASS. Artifacts tổng hợp ở ignored .local/test-results/playwright-report hoặc CI retention ngắn.
+
+Remote CI [45964530282](https://github.com/litequang/indongduongSQL/actions/runs/45964530282), đúng code **9231886544ec92415e7d9b8dce36f070a76c2489**: **completed success**. Ubuntu/MariaDB riêng chạy PASS **46/46 API**, unit 5/5, legacy 5/5, build/runtime, compiled restart và **19/19 Playwright**, kèm upload browser artifacts. Commit bàn giao chỉ sửa docs, không đổi checkpoint code.
+
+App PC hiện sẵn sàng **http://localhost:4100**, setup đã đóng; tài khoản/mật khẩu hiện có không bị đọc/đổi. R2 chưa cấu hình nên upload/backup dev báo chưa khả dụng, không fallback filesystem/provider khác. Live R2 dev/private backup, physical PWA/device/audio và Hawk Host/native sharp/proxy/memory còn LOCAL_VALIDATION_REQUIRED. Baseline legacy prompt14 MANAGER xuất kho là lỗi cũ không chạy lại; emulator SKIP; vendor/Zod/ESLint/Playwright color warnings không chặn build.
+
+## Tiếp nhận
+
+Fetch/status/branch/upstream/history trước khi switch. Giữ mọi thay đổi local; nhánh chưa có thì `git switch --track origin/codex/phase-03-private-operations`; nếu đã có, kiểm tra commit chưa push rồi `git switch` và `git pull --ff-only`. Không reset/force-push/auto-merge.
 
 ```powershell
 npm ci
@@ -28,7 +38,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run test:legacy
-$env:ALLOW_TEST_DATABASE = "1"
+$env:ALLOW_TEST_DATABASE = '1'
 npm run test:integration
 npm run build
 npm run check:runtime
@@ -37,17 +47,6 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Cấu hình `TEST_DB_NAME`, `TEST_DB_USER`, `TEST_DB_PASSWORD` trỏ tới dữ liệu tổng hợp riêng. Chạy integration, restart và browser theo thứ tự nếu dùng chung test DB. Dùng `npm run local:db` nếu sử dụng MariaDB dev theo cấu hình của dự án. Khởi động `npm run dev` và mở `http://localhost:4100`.
+Không chạy integration/restart/E2E đồng thời trên một test DB. Restart tự chuẩn bị lại fixture 02C; không phụ thuộc suite cuối. Local PC dùng local:db và dev nếu cần khởi động lại; không đọc/đổi password chủ dự án để walkthrough.
 
-## Chạy thử từ đơn đến giao hàng
-
-1. SALE tạo khách thử có điện thoại và địa chỉ, tạo đơn có ít nhất hai sản phẩm cần in. Chọn một sản phẩm cần gia công, một sản phẩm không cần gia công. Xác nhận đơn.
-2. DESIGNER nhập và xác nhận kỹ thuật, tạo lệnh từ sản phẩm, gửi cho PRINTER. Có thể chia một sản phẩm thành nhiều lệnh hoặc ghép các sản phẩm của nhiều đơn. Nhập số lượng sản phẩm theo túi và số tờ in theo thông số in.
-3. PRINTER nhận lệnh, xác nhận revision đúng, bắt đầu in rồi ghi số tờ thực in và tờ hỏng. FINISHER mở Gia công, tiếp nhận từng bàn giao. Với dòng cần gia công, nhận việc, bắt đầu và hoàn thành. Với dòng còn lại, bấm **Xác nhận không cần gia công**.
-4. Người có quyền nghiệm thu nhập số túi đạt, không đạt, thiếu. Kiểm tra kho chỉ ghi nhận số đạt. Để một sản phẩm chưa nghiệm thu và xác nhận WAREHOUSE thấy lý do chưa xuất.
-5. Nghiệm thu đủ các dòng còn hiệu lực. WAREHOUSE kiểm tra checklist, chọn phương thức và địa chỉ rồi xác nhận **Xuất nguyên đơn**. Mở phiếu đối chiếu nguồn và tồn. SALE mở **Giao hàng**, tạo vận đơn, xác nhận bàn giao, bắt đầu giao và giao thành công. Đơn phải chuyển **Hoàn thành**.
-6. Với đơn thử riêng, báo giao thất bại, chuyển hoàn rồi nhận hàng. Kiểm tra tồn vẫn giữ nguyên đến khi ghi nhận kiểm tra hàng hoàn. Chọn tình trạng cho từng dòng và đối chiếu lượng nhập lại trên sổ kho.
-
-## Quyết định còn mở
-
-Nguồn vật lý của sản phẩm không cần in và quy tắc đối soát nghiệm thu REPRINT vẫn chờ quyết định. Hàng hoàn hỏng hoặc giữ riêng cần xử lý nghiệp vụ tiếp theo để giải phóng phiếu đang mở. Chính sách khách hàng dùng chung số điện thoại và thời hạn lưu chi tiết import vẫn chờ chủ dự án. Xem [PHASE_03_HANDOFF.md](PHASE_03_HANDOFF.md) khi Phase 03 được giao.
+Khi được cấp **hai bucket dev mới/token riêng** trong .env, làm theo [PRIVATE_OPERATIONS.md](PRIVATE_OPERATIONS.md): R2_ENVIRONMENT/runtime development, opt-in ALLOW_R2_DEV_SMOKE=1, `npm run test:r2-dev`, rồi UI ảnh/backup/verify/missing-only restore. Không thay bằng production. [PHASE_04_HANDOFF.md](PHASE_04_HANDOFF.md) chuẩn bị phần tiếp khi có task mới. Giữ mở chính sách nguồn hàng không cần in, REPRINT, hàng hoàn hỏng/hold, khách chung điện thoại, import/notification/change/backup retention. Không tự tạo nhập kho hoặc purge history.
