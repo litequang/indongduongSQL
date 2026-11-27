@@ -8,7 +8,7 @@ Read `docs/PROJECT_STATUS.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md`, then the 
 - UI: Tailwind CSS v4, shadcn/ui with Radix primitives, Lucide, TanStack Query/Table. ReUI free compatible patterns selectively; Recharts for real reports. No paid components, Next.js or second primitive framework. Record exact sources/licenses in THIRD_PARTY_NOTICES.md.
 - SQL runtime must not import `legacy/firebase`, Firebase SDKs or the former JSON-store server. No Firebase data/account/password migration, dual database, Firestore adapter or production fallback to localStorage.
 - Preserve existing business rules and eight roles. Product quantity differs from sheets; sales products and print runs are M:N. Product finishing/no-work confirmation, warehouse sibling readiness, revision ACK and cancellation invariants are mandatory. No arbitrary Kanban state dragging.
-- Phase 00, Phase 01 and UI Foundation are complete. Phase 02A is authorized on the task branch. Phase 02B, Phase 02C, Phase 03 and deployment need separate authorization.
+- Phase 00, Phase 01 and UI Foundation are complete. The 2026-11-27 PC task authorizes Phase 02A acceptance and Phase 02B on `codex/phase-02b-production`. Stop after 02B. Phase 02C, Phase 03 and deployment need separate authorization.
 
 ## Security
 

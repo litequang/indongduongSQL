@@ -1,5 +1,9 @@
 # PC / Cloud handoff
 
+## Active PC ownership — 2026-11-27
+
+PC claims `codex/phase-02b-production`, based on Cloud's completed handoff `f6490410d9c8b3cf0deb47c527622a8df6384740`. PR #1 remains open, base `codex/sql-foundation`; GitHub Actions run 45792857047 completed success at that exact HEAD. Working tree was clean before takeover. No concurrent writer is authorized on this branch. Task: Windows acceptance of 02A, then implementation and verification of 02B; no main merge, 02C, R2 or hosting deployment. Acceptance is being executed; final evidence will replace this active checkpoint at handoff.
+
 Owner: Cloud. Phase 02A. Base `codex/sql-foundation` at `2425a42cf0a6618dac653b2ebbb8010e29edcad1`. Task branch `codex/phase-02a-sales-design`. Tested code checkpoint and CI are recorded in [PHASE_02A_TEST_REPORT.md](PHASE_02A_TEST_REPORT.md). Earlier PC evidence remains in the base branch and historical reports.
 
 ## Changes and ownership
